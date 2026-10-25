@@ -46,7 +46,8 @@ export interface Route {
   blocked: number;
   /** Malicious share that reached application code. */
   breach: number;
-  quotaCapped: boolean;
+  /** Share of delivered requests whose path crossed a node with tenant quota on. */
+  quotaFrac: number;
   /** Share of delivered requests whose ingress path crossed a node with each flag. */
   flagFrac: Record<string, number>;
   delivered: number;
@@ -64,14 +65,18 @@ export interface Compiled {
 }
 
 /** Issues that make a design invalid for scoring. */
-export const BLOCKING_CODES = new Set(['not_in_palette', 'palette_max', 'limit_nodes', 'limit_edges', 'unknown_type']);
+export const BLOCKING_CODES = new Set(['not_in_palette', 'palette_max', 'limit_nodes', 'limit_edges', 'unknown_type', 'cycle']);
 
 const MAX_DEPTH = 24;
 
 export function nodeRegion(level: Level, def: ComponentDef, node: DesignNode): string {
   if (def.props?.fixedRegion) return def.props.fixedRegion;
   if (def.props?.onPrem) return 'onprem';
-  return node.settings.region ?? level.defaultRegion;
+  const r = node.settings.region;
+  // Only components with a region setting can move, and only to a region the level offers.
+  // Entries are placed by the level itself, so their region is trusted as given.
+  if (def.behavior === 'entry' && r) return r;
+  return def.settings?.region && r && level.regions.some((x) => x.id === r) ? r : level.defaultRegion;
 }
 
 export function compile(level: Level, design: Design, catalog: Record<string, ComponentDef>): Compiled {
@@ -220,6 +225,19 @@ export function compile(level: Level, design: Design, catalog: Record<string, Co
     }
   }
 
+  // A wire loop never carries meaningful traffic and would make routing explode: refuse it up front.
+  const cycleAt = findCycle(order, outs);
+  if (cycleAt) {
+    issues.push({
+      code: 'cycle',
+      severity: 'error',
+      text: `Các kết nối tạo thành vòng lặp qua ${nodes[cycleAt].label}: request sẽ chạy vòng mãi. Bỏ bớt một kết nối.`,
+      nodeId: cycleAt,
+      conceptKey: 'request_flow',
+    });
+  }
+  const skipRouting = !!cycleAt || issues.some((i) => i.code === 'limit_nodes' || i.code === 'limit_edges');
+
   const latBetween = (a: string, b: string) => (a === b ? 0 : level.regionLatencyMs[regionKey(a, b)] ?? 0);
 
   const touched: Record<DataTag, Set<string>> = { pii: new Set(), card: new Set() };
@@ -237,7 +255,7 @@ export function compile(level: Level, design: Design, catalog: Record<string, Co
       edgeServed: 0,
       blocked: 0,
       breach: 0,
-      quotaCapped: false,
+      quotaFrac: 0,
       flagFrac: {},
       delivered: 0,
       jobs: [],
@@ -301,7 +319,7 @@ export function compile(level: Level, design: Design, catalog: Record<string, Co
       const cands = outs[fromId].filter((o) => servesFamily(o, family, depth));
       if (cands.length === 0) {
         sink.ok.v = false;
-        if (mode === 'sync') route.lostFrac = Math.min(1, route.lostFrac + reqFrac);
+        if (mode === 'sync' && branchLost) branchLost.v += reqFrac;
         fail(`${nodes[fromId].label} không có nơi xử lý "${family}".`, fromId);
         return;
       }
@@ -349,6 +367,8 @@ export function compile(level: Level, design: Design, catalog: Record<string, Co
     };
 
     const syncSink: Sink = { visits: route.visits, hop: { ms: 0 }, ok: { v: true } };
+    /** Requests of the current compute branch that some call could not complete (counted once per branch). */
+    let branchLost: { v: number } | null = null;
 
     const acceptsIngress = (id: string) => {
       const d = nodes[id].def;
@@ -356,7 +376,7 @@ export function compile(level: Level, design: Design, catalog: Record<string, Co
       return d.behavior === 'provider' && !!kind.target && !!d.ingress?.includes(kind.target);
     };
 
-    const ingress = (id: string, frac: number, tags: DataTag[], prevRegion: string, flags: string[], depth: number) => {
+    const ingress = (id: string, frac: number, tags: DataTag[], prevRegion: string, flags: string[], quota: boolean, depth: number) => {
       if (frac <= 0) return;
       const cn = nodes[id];
       if (depth > MAX_DEPTH) {
@@ -378,13 +398,13 @@ export function compile(level: Level, design: Design, catalog: Record<string, Co
       }
       const nextTags = cn.def.props?.strips ? tags.filter((t) => !cn.def.props!.strips!.includes(t)) : tags;
       const nextFlags = cn.def.flags ? [...flags, ...cn.def.flags] : flags;
-      if (cn.node.settings.tenantQuota && kind.quotaRps !== undefined) route.quotaCapped = true;
+      const nextQuota = quota || (!!cn.node.settings.tenantQuota && !!cn.def.settings?.tenantQuota);
 
       if (b === 'entry' || b === 'router' || b === 'edge_cache') {
         if (b === 'edge_cache' && kind.edgeCacheable) {
           const hit = frac * (cn.tier.hitRatio ?? 0);
           route.edgeServed += hit;
-          deliver(hit, nextFlags);
+          deliver(hit, nextFlags, nextQuota);
           frac -= hit;
         }
         const accepting = outs[id].filter(acceptsIngress);
@@ -402,36 +422,43 @@ export function compile(level: Level, design: Design, catalog: Record<string, Co
           fail(`từ ${cn.label} không có đường đi tiếp.`, id);
           return;
         }
-        for (const n of next) ingress(n, frac / next.length, nextTags, here, nextFlags, depth + 1);
+        for (const n of next) ingress(n, frac / next.length, nextTags, here, nextFlags, nextQuota, depth + 1);
         return;
       }
       if (b === 'compute') {
         if (kind.malicious) route.breach += frac;
-        deliver(frac, nextFlags);
+        deliver(frac, nextFlags, nextQuota);
+        branchLost = { v: 0 };
         for (const call of kind.calls) routeCall(id, call.family, frac * call.count, frac, here, nextTags, syncSink, 'sync', 1);
+        route.lostFrac += Math.min(frac, branchLost.v);
+        branchLost = null;
         return;
       }
       if (b === 'provider') {
         if (kind.malicious && cn.def.props?.stateful) route.breach += frac;
-        deliver(frac, nextFlags);
+        deliver(frac, nextFlags, nextQuota);
         return;
       }
       route.lostFrac += frac;
       fail(`${cn.label} không nhận request từ người dùng.`, id);
     };
 
-    const deliver = (frac: number, flags: string[]) => {
+    const deliver = (frac: number, flags: string[], quota: boolean) => {
       route.delivered += frac;
+      if (quota) route.quotaFrac += frac;
       for (const f of new Set(flags)) route.flagFrac[f] = (route.flagFrac[f] ?? 0) + frac;
     };
 
     const entry = nodes[kind.from];
-    if (!entry) {
+    if (skipRouting) {
+      route.ok = false;
+      route.lostFrac = 1;
+    } else if (!entry) {
       route.ok = false;
       route.lostFrac = 1;
       fail('không tìm thấy nguồn traffic.');
     } else {
-      ingress(entry.id, 1, kind.carries ?? [], entry.region, [], 0);
+      ingress(entry.id, 1, kind.carries ?? [], entry.region, [], false, 0);
     }
     route.hopLatencyMs += syncSink.hop.ms;
     if (!syncSink.ok.v) route.ok = false;
@@ -450,4 +477,32 @@ export function compile(level: Level, design: Design, catalog: Record<string, Co
 
 export function kindById(level: Level, id: string): TrafficKind | undefined {
   return level.traffic.kinds.find((k) => k.id === id);
+}
+
+/** Returns a node on a directed cycle, if any (iterative DFS with colours). */
+export function findCycle(order: string[], outs: Record<string, string[]>): string | undefined {
+  const colour = new Map<string, 0 | 1 | 2>();
+  for (const start of order) {
+    if (colour.get(start)) continue;
+    const stack: [string, number][] = [[start, 0]];
+    colour.set(start, 1);
+    while (stack.length) {
+      const top = stack[stack.length - 1];
+      const [id, i] = top;
+      const next = outs[id]?.[i];
+      if (next === undefined) {
+        colour.set(id, 2);
+        stack.pop();
+        continue;
+      }
+      top[1] = i + 1;
+      const c = colour.get(next) ?? 0;
+      if (c === 1) return next;
+      if (c === 0) {
+        colour.set(next, 1);
+        stack.push([next, 0]);
+      }
+    }
+  }
+  return undefined;
 }

@@ -31,10 +31,29 @@ interface NodeState {
   slowUntil: number;
 }
 
+/** The node an event hits: by id, or the node of that type carrying the most traffic (an idle spare cannot soak it up). */
 function matchNode(compiled: Compiled, ev: { targetId?: string; targetType?: string }): string | undefined {
   if (ev.targetId && compiled.nodes[ev.targetId]) return ev.targetId;
-  if (ev.targetType) return compiled.order.find((id) => compiled.nodes[id].def.type === ev.targetType);
-  return undefined;
+  if (!ev.targetType) return undefined;
+  const load = (id: string) => {
+    let sum = 0;
+    for (const r of Object.values(compiled.routes)) {
+      sum += r.visits[id] ?? 0;
+      for (const j of r.jobs) sum += j.visits[id] ?? 0;
+    }
+    return sum;
+  };
+  let best: string | undefined;
+  let bestLoad = -1;
+  for (const id of compiled.order) {
+    if (compiled.nodes[id].def.type !== ev.targetType) continue;
+    const l = load(id);
+    if (l > bestLoad) {
+      best = id;
+      bestLoad = l;
+    }
+  }
+  return best;
 }
 
 export function simulate(level: Level, compiled: Compiled): SimResult {
@@ -111,7 +130,9 @@ export function simulate(level: Level, compiled: Compiled): SimResult {
     for (const k of kinds) {
       const r = rateAt(level.traffic.phases, k.id, t);
       const route = compiled.routes[k.id];
-      const eff = route?.quotaCapped && k.quotaRps !== undefined ? Math.min(r, k.quotaRps) : r;
+      // Only the share that passes a tenant quota is capped; traffic routed around it is not.
+      const q = route && k.quotaRps !== undefined && route.delivered > 0 ? route.quotaFrac / route.delivered : 0;
+      const eff = q > 0 ? r * (1 - q) + Math.min(r * q, k.quotaRps!) : r;
       effRate[k.id] = eff;
       if (!route) continue;
       for (const [id, w] of Object.entries(route.visits)) demand[id] += eff * w;

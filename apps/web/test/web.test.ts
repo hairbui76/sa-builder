@@ -126,3 +126,29 @@ describe('buildAdr', () => {
     expect(md).toContain('TCO 3 năm');
   });
 });
+
+describe('server-side input hygiene', () => {
+  it('drops unsupported settings, foreign regions and over-budget questions', () => {
+    const l6 = levels.find((l) => l.id === 'everyone_wants_own')!;
+    const raw = {
+      nodes: [
+        ...l6.fixedNodes,
+        { id: 'lb', type: 'load_balancer', x: 0, y: 0, settings: { tenantQuota: true, standby: true } },
+        { id: 'app', type: 'app_server', x: 0, y: 0, settings: { region: 'zz', count: 999, tier: 'xl' } },
+      ],
+      edges: [],
+      decisions: {},
+      asked: l6.discovery.questions.map((q) => q.id),
+    };
+    const d = loadDesign(l6, catalog, raw);
+    const lb = d.nodes.find((n) => n.id === 'lb')!;
+    const app = d.nodes.find((n) => n.id === 'app')!;
+    expect(lb.settings.tenantQuota).toBeUndefined();
+    expect(lb.settings.standby).toBeUndefined();
+    expect(app.settings.region).toBe(l6.defaultRegion);
+    expect(app.settings.count).toBe(12);
+    expect(app.settings.tier).toBe('s');
+    const hours = l6.discovery.questions.filter((q) => d.asked.includes(q.id)).reduce((s, q) => s + q.hours, 0);
+    expect(hours).toBeLessThanOrEqual(l6.discovery.hours);
+  });
+});

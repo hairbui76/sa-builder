@@ -61,25 +61,40 @@ export function GameClient({ levelId }: { levelId: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [evalKey, ready]);
 
+  // Cancel a running animation when leaving the level, so it cannot report into another one.
+  const frame = useRef<number | null>(null);
+  useEffect(
+    () => () => {
+      if (frame.current !== null) cancelAnimationFrame(frame.current);
+      useGame.getState().setRunning(false);
+    },
+    [level.id],
+  );
+
   const run = () => {
     const st = useGame.getState();
     if (st.running) return;
-    const res = evaluate(level, st.design, catalog);
     st.setRunning(true);
     setVerified(null);
     const t0 = performance.now();
     const tick = () => {
       const f = Math.min(1, (performance.now() - t0) / RUN_MS);
       setClock(Math.round(f * level.traffic.ticks));
-      if (f < 1) requestAnimationFrame(tick);
-      else {
-        st.setRunning(false);
-        st.setResult(res);
-        recordRun(level.id, res.stars, res.overall, res.passed);
-        void submitOnline(level.id, st.design, setVerified);
+      if (f < 1) {
+        frame.current = requestAnimationFrame(tick);
+        return;
       }
+      frame.current = null;
+      const now = useGame.getState();
+      if (now.level?.id !== level.id) return;
+      // Score the board as it is now: edits made during the animation are included.
+      const res = evaluate(level, now.design, catalog);
+      now.setRunning(false);
+      now.setResult(res);
+      recordRun(level.id, res.stars, res.overall, res.passed);
+      void submitOnline(level.id, now.design, setVerified);
     };
-    requestAnimationFrame(tick);
+    frame.current = requestAnimationFrame(tick);
   };
 
   if (!ready) return <div className="dotted-bg flex h-screen items-center justify-center font-hand text-2xl">Đang mở hồ sơ khách hàng…</div>;

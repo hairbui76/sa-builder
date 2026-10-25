@@ -7,6 +7,7 @@ export const catalog: Record<string, ComponentDef> = Object.fromEntries(
     [
       { type: 'users', title: 'Users', category: 'entry', icon: 'users', summary: '', behavior: 'entry', tiers: [{ id: 'u', title: 'U', capacity: 0, latencyMs: 0, monthlyUsd: 0 }], mapping: m },
       { type: 'lb', title: 'LB', category: 'edge', icon: 'lb', summary: '', behavior: 'router', tiers: [{ id: 's', title: 'S', capacity: 0, latencyMs: 1, monthlyUsd: 20 }], mapping: m, flags: ['lb'] },
+      { type: 'gw', title: 'Gateway', category: 'edge', icon: 'door', summary: '', behavior: 'router', tiers: [{ id: 's', title: 'S', capacity: 0, latencyMs: 4, monthlyUsd: 30 }], settings: { tenantQuota: true }, mapping: m },
       { type: 'waf', title: 'WAF', category: 'security', icon: 'shield', summary: '', behavior: 'router', tiers: [{ id: 's', title: 'S', capacity: 0, latencyMs: 2, monthlyUsd: 25 }], props: { blocksMalicious: 0.9 }, flags: ['waf'], mapping: m },
       { type: 'app', title: 'App', category: 'compute', icon: 'server', summary: '', behavior: 'compute', tiers: [{ id: 's', title: 'S', capacity: 100, latencyMs: 20, monthlyUsd: 15 }], settings: { count: { min: 1, max: 10 }, region: true }, mapping: m },
       { type: 'db', title: 'DB', category: 'data', icon: 'db', summary: '', behavior: 'provider', provides: ['sql_read', 'sql_write'], tiers: [{ id: 's', title: 'S', capacity: 1000, latencyMs: 5, monthlyUsd: 30 }], props: { stateful: true }, settings: { standby: true, region: true, encryption: true }, mapping: m },

@@ -54,12 +54,13 @@ end $$;
 create trigger runs_after_insert after insert on public.runs
 for each row execute function public.on_run_inserted();
 
--- A profile for every new account.
+-- A profile for every new account. Never derive the public name from the email address:
+-- use the GitHub handle when there is one, otherwise an anonymous name.
 create function public.on_auth_user_created() returns trigger
 language plpgsql security definer set search_path = public as $$
 begin
   insert into public.profiles (id, display_name)
-  values (new.id, coalesce(new.raw_user_meta_data ->> 'user_name', split_part(new.email, '@', 1), 'player'));
+  values (new.id, coalesce(nullif(new.raw_user_meta_data ->> 'user_name', ''), 'Kiến trúc sư ' || left(new.id::text, 6)));
   return new;
 end $$;
 
@@ -70,7 +71,8 @@ alter table public.profiles enable row level security;
 alter table public.runs enable row level security;
 alter table public.level_progress enable row level security;
 
-create policy "profiles are public" on public.profiles for select using (true);
+-- Profiles are private; the leaderboard function below exposes only names of players who opted in.
+create policy "read own profile" on public.profiles for select using (auth.uid() = id);
 create policy "update own profile" on public.profiles for update using (auth.uid() = id) with check (auth.uid() = id);
 create policy "read own runs" on public.runs for select using (auth.uid() = user_id);
 create policy "read own progress" on public.level_progress for select using (auth.uid() = user_id);

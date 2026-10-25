@@ -25,16 +25,31 @@ export function evaluationId(level: Level): string {
   return `${ENGINE_VERSION}:${level.id}:${hashString(JSON.stringify(level))}`;
 }
 
+/** Questions asked, in order, that fit within the level's meeting hours (the server cannot trust the client on this). */
+export function answeredQuestions(level: Level, design: Design): string[] {
+  const out: string[] = [];
+  let used = 0;
+  for (const id of new Set(design.asked)) {
+    const q = level.discovery.questions.find((x) => x.id === id);
+    if (!q || used + q.hours > level.discovery.hours + 1e-9) continue;
+    used += q.hours;
+    out.push(id);
+  }
+  return out;
+}
+
 export function discoveredFacts(level: Level, design: Design): Set<string> {
+  const asked = new Set(answeredQuestions(level, design));
   const out = new Set<string>();
   for (const q of level.discovery.questions) {
-    if (design.asked.includes(q.id)) for (const f of q.reveals ?? []) out.add(f);
+    if (asked.has(q.id)) for (const f of q.reveals ?? []) out.add(f);
   }
   return out;
 }
 
 export function hoursUsed(level: Level, design: Design): number {
-  return level.discovery.questions.filter((q) => design.asked.includes(q.id)).reduce((s, q) => s + q.hours, 0);
+  const asked = new Set(answeredQuestions(level, design));
+  return level.discovery.questions.filter((q) => asked.has(q.id)).reduce((s, q) => s + q.hours, 0);
 }
 
 export function evaluate(level: Level, design: Design, catalog: Record<string, ComponentDef>): EvalResult {

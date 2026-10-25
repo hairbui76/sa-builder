@@ -1,4 +1,4 @@
-import { designSchema, type ComponentDef, type Design, type DesignNode, type Level, type NodeSettings } from '@sa/engine';
+import { answeredQuestions, designSchema, type ComponentDef, type Design, type DesignNode, type Level, type NodeSettings } from '@sa/engine';
 
 export function emptyDesign(level: Level): Design {
   return {
@@ -25,10 +25,13 @@ export function loadDesign(level: Level, catalog: Record<string, ComponentDef>, 
     const saved = d.nodes.find((n) => n.id === f.id);
     return { ...f, settings: { ...f.settings }, fixed: true, x: saved?.x ?? f.x, y: saved?.y ?? f.y };
   });
+  const seen = new Set(fixedIds);
   for (const n of d.nodes) {
-    if (fixedIds.has(n.id)) continue;
-    if (!catalog[n.type] || !allowed.has(n.type)) continue;
-    nodes.push({ ...n, fixed: false });
+    if (seen.has(n.id)) continue;
+    const def = catalog[n.type];
+    if (!def || !allowed.has(n.type)) continue;
+    seen.add(n.id);
+    nodes.push({ ...n, fixed: false, settings: sanitizeSettings(level, def, n.settings) });
   }
   const ids = new Set(nodes.map((n) => n.id));
   const edges = d.edges.filter((e) => ids.has(e.from) && ids.has(e.to));
@@ -37,8 +40,23 @@ export function loadDesign(level: Level, catalog: Record<string, ComponentDef>, 
     const v = d.decisions[dec.id];
     if (v && dec.options.some((o) => o.id === v)) decisions[dec.id] = v;
   }
-  const qids = new Set(level.discovery.questions.map((q) => q.id));
-  return { nodes, edges, decisions, asked: d.asked.filter((q) => qids.has(q)), notes: d.notes ?? {} };
+  const asked = answeredQuestions(level, { ...d, asked: d.asked });
+  return { nodes, edges, decisions, asked, notes: d.notes ?? {} };
+}
+
+/** Keep only settings the component supports, with values the level allows. */
+export function sanitizeSettings(level: Level, def: ComponentDef, s: NodeSettings): NodeSettings {
+  const base = defaultSettings(level, def);
+  const pal = level.palette.find((p) => p.type === def.type);
+  const out: NodeSettings = { ...base };
+  if (s.tier && def.tiers.some((t) => t.id === s.tier && (!pal?.tiers || pal.tiers.includes(t.id)))) out.tier = s.tier;
+  const c = def.settings?.count;
+  if (c && typeof s.count === 'number' && Number.isFinite(s.count)) out.count = Math.max(c.min, Math.min(c.max, Math.floor(s.count)));
+  if (def.settings?.region && s.region && level.regions.some((r) => r.id === s.region)) out.region = s.region;
+  if (def.settings?.encryption && s.encryption) out.encryption = s.encryption;
+  if (def.settings?.standby) out.standby = !!s.standby;
+  if (def.settings?.tenantQuota) out.tenantQuota = !!s.tenantQuota;
+  return out;
 }
 
 export function defaultSettings(level: Level, def: ComponentDef): NodeSettings {

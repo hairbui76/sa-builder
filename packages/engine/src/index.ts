@@ -1,6 +1,6 @@
 export * from './types';
 export { canConnect } from './graph';
-export { compile, nodeRegion, BLOCKING_CODES } from './compile';
+export { compile, nodeRegion, findCycle, BLOCKING_CODES } from './compile';
 export type { Compiled, CNode, Route, JobRoute } from './compile';
 export { simulate, rateAt, queueFactor, FAILOVER_TICKS } from './simulate';
 export { analyze } from './analyze';
@@ -9,6 +9,7 @@ export {
   evaluate,
   evaluationId,
   discoveredFacts,
+  answeredQuestions,
   hoursUsed,
   ENGINE_VERSION,
   STAR2_SCORE,
