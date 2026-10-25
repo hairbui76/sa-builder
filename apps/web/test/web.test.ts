@@ -111,3 +111,18 @@ describe('layeredLayout', () => {
     expect(() => layeredLayout(d, catalog)).not.toThrow();
   });
 });
+
+describe('buildAdr', () => {
+  it('records decisions, notes, architecture and results', async () => {
+    const { buildAdr } = await import('@/lib/adr');
+    const { evaluate } = await import('@sa/engine');
+    const l2 = levels.find((l) => l.id === 'build_or_buy')!;
+    const d = { ...levelExamples[l2.id].reference, notes: { payments: 'PSP nhanh và rẻ hơn tự đạt PCI.' } };
+    const md = buildAdr(l2, d, evaluate(l2, d, catalog), catalog);
+    expect(md).toContain('# Hồ sơ kiến trúc: Thời trang Mây');
+    expect(md).toContain('ADR-01: Thanh toán');
+    expect(md).toContain('PSP nhanh và rẻ hơn tự đạt PCI.');
+    expect(md).toContain('Tự xây xử lý thẻ');
+    expect(md).toContain('TCO 3 năm');
+  });
+});

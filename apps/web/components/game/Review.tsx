@@ -1,8 +1,9 @@
 'use client';
 import Link from 'next/link';
-import { AlertTriangle, ArrowRight, BookOpen, CheckCircle2, Info, Pencil, XCircle } from 'lucide-react';
+import { AlertTriangle, ArrowRight, BookOpen, CheckCircle2, Download, Info, Pencil, XCircle } from 'lucide-react';
 import { PILLARS, type EvalResult, type Level } from '@sa/engine';
-import { conceptByKey, levels } from '@sa/content';
+import { catalog, conceptByKey, levels } from '@sa/content';
+import { buildAdr } from '@/lib/adr';
 import { Stars } from '@/components/ui/Stars';
 import { PILLAR_LABEL, usd } from '@/lib/labels';
 import { useGame } from './store';
@@ -213,6 +214,21 @@ export function Review({ result, level, verified }: { result: EvalResult; level:
         <div className="sticky bottom-0 mt-4 flex flex-wrap gap-2 bg-paper py-3">
           <button className="btn" onClick={() => setStage('design')} data-testid="back-to-design">
             <Pencil size={16} /> Sửa thiết kế
+          </button>
+          <button
+            className="btn"
+            onClick={() => {
+              const md = buildAdr(level, useGame.getState().design, result, catalog);
+              const url = URL.createObjectURL(new Blob([md], { type: 'text/markdown;charset=utf-8' }));
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `adr-${level.id}.md`;
+              a.click();
+              URL.revokeObjectURL(url);
+            }}
+            title="Tải hồ sơ kiến trúc dạng Markdown"
+          >
+            <Download size={16} /> Tải ADR
           </button>
           {result.passed && nextLevel && (
             <Link href={`/levels/${nextLevel.id}`} className="btn btn-primary">
