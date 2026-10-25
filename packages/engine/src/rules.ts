@@ -53,7 +53,7 @@ export function checkRule(rule: Rule, ctx: RuleContext): RuleOutcome {
         const ratio = rule.op === '<=' ? (v === 0 ? 0 : rule.value / v) : rule.value === 0 ? 0 : v / rule.value;
         score = 0.5 * clamp(ratio, 0, 1);
       }
-      return { passed, score, actual: formatValue(v, rule.unit) };
+      return { passed, score, actual: formatValue(v, rule.unit), nodeIds: passed ? undefined : metricNodes(rule.metric, ctx) };
     }
     case 'residency': {
       const bad = analysis.touched[rule.tag].filter((id) => {
@@ -127,4 +127,18 @@ export function checkRule(rule: Rule, ctx: RuleContext): RuleOutcome {
       return { passed, score: passed ? 1 : 0, actual: opt ? opt.title : 'Chưa chọn' };
     }
   }
+}
+
+/** Nodes to point at on the board when a metric rule fails. */
+function metricNodes(metric: string, ctx: RuleContext): string[] | undefined {
+  const { compiled, analysis } = ctx;
+  if (metric === 'scope_card' || metric === 'scope_pii') {
+    const tag = metric === 'scope_card' ? 'card' : 'pii';
+    return analysis.touched[tag].filter((id) => !compiled.nodes[id].def.props?.external);
+  }
+  if (metric.startsWith('peak_util_pct:')) {
+    const type = metric.slice('peak_util_pct:'.length);
+    return compiled.order.filter((id) => compiled.nodes[id].def.type === type);
+  }
+  return undefined;
 }

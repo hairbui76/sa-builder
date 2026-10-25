@@ -1,0 +1,168 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-paper: #f7f6f1;
+  --color-paper-2: #efede4;
+  --color-ink: #1f2328;
+  --color-ink-2: #4a4d52;
+  --color-muted: #77776f;
+  --color-line: #d9d6cb;
+  --color-note: #fde98c;
+  --color-note-line: #e8c94b;
+  --color-sky: #a9d3f7;
+  --color-sky-strong: #5aa7e8;
+  --color-mint: #1b9c85;
+  --color-mint-soft: #d9f2ec;
+  --color-ok: #2f9e44;
+  --color-ok-soft: #e3f5e6;
+  --color-bad: #d9363e;
+  --color-bad-soft: #fde7e7;
+  --color-warn: #e8890c;
+  --color-warn-soft: #fff1dc;
+  --color-lilac: #c9c2f2;
+  --font-hand: var(--font-patrick), 'Patrick Hand', 'Comic Sans MS', cursive;
+  --font-body: var(--font-bevn), 'Be Vietnam Pro', system-ui, sans-serif;
+}
+
+html,
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+}
+
+.font-hand {
+  font-family: var(--font-hand);
+  letter-spacing: 0.01em;
+}
+
+/* Hand-drawn looking box: irregular radius + solid ink stroke. */
+.sketch {
+  border: 2px solid var(--color-ink);
+  border-radius: 14px 18px 12px 17px / 17px 12px 18px 14px;
+  background: white;
+}
+.sketch-soft {
+  border: 1.5px solid var(--color-line);
+  border-radius: 12px 15px 11px 14px / 14px 11px 15px 12px;
+  background: white;
+}
+.sketch-shadow {
+  box-shadow: 3px 3px 0 0 var(--color-ink);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 2px solid var(--color-ink);
+  border-radius: 12px 14px 11px 13px / 13px 11px 14px 12px;
+  padding: 0.35rem 0.9rem;
+  font-family: var(--font-hand);
+  font-size: 1.05rem;
+  background: white;
+  transition: transform 80ms ease, box-shadow 80ms ease;
+  box-shadow: 2px 2px 0 0 var(--color-ink);
+  cursor: pointer;
+}
+.btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 0 var(--color-ink);
+}
+.btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: 0 0 0 0 var(--color-ink);
+}
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+.btn-primary {
+  background: var(--color-sky);
+}
+.btn-ghost {
+  border-color: transparent;
+  box-shadow: none;
+  background: transparent;
+}
+.btn-ghost:hover {
+  background: var(--color-paper-2);
+  box-shadow: none;
+}
+
+.dotted-bg {
+  background-color: var(--color-paper);
+  background-image: radial-gradient(var(--color-line) 1.2px, transparent 1.2px);
+  background-size: 22px 22px;
+}
+
+.note {
+  background: var(--color-note);
+  border: 1.5px solid var(--color-note-line);
+  border-radius: 4px;
+  box-shadow: 2px 3px 0 rgba(0, 0, 0, 0.08);
+}
+
+.wavy-underline {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='6' viewBox='0 0 40 6'%3E%3Cpath d='M0 3 Q 5 0 10 3 T 20 3 T 30 3 T 40 3' fill='none' stroke='%231f2328' stroke-width='1.5'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-position: bottom;
+  padding-bottom: 6px;
+}
+
+/* React Flow tweaks for the sketch look. */
+.react-flow__edge-path {
+  stroke: var(--color-ink);
+  stroke-width: 1.6;
+}
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke: var(--color-sky-strong);
+  stroke-width: 2.4;
+}
+.react-flow__handle {
+  width: 10px;
+  height: 10px;
+  background: white;
+  border: 2px solid var(--color-ink);
+}
+.react-flow__handle:hover {
+  background: var(--color-sky);
+}
+.react-flow__connection-path {
+  stroke: var(--color-sky-strong);
+  stroke-width: 2;
+  stroke-dasharray: 5 4;
+}
+.react-flow__attribution {
+  display: none;
+}
+
+@keyframes flow-dash {
+  to {
+    stroke-dashoffset: -18;
+  }
+}
+.edge-running .react-flow__edge-path {
+  stroke-dasharray: 6 6;
+  animation: flow-dash 0.6s linear infinite;
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.pop-in {
+  animation: pop-in 180ms ease-out both;
+}
+
+.scroll-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line) transparent;
+}
