@@ -91,7 +91,8 @@ export const useGame = create<GameState>((set, get) => {
       const id = nextNodeId(design, type);
       const p = pos ?? { x: 380 + ((playerNodes * 47) % 300), y: 220 + ((playerNodes * 83) % 260) };
       change((d) => ({ ...d, nodes: [...d.nodes, { id, type, x: p.x, y: p.y, settings: defaultSettings(level, def) }] }));
-      set({ selected: id, tab: 'inspect' });
+      // Keep the palette open so several components can be added in a row.
+      set({ selected: id });
     },
 
     moveNode(id, x, y) {

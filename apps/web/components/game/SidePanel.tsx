@@ -26,6 +26,7 @@ export function SidePanel() {
             key={t.id}
             onClick={() => setTab(t.id)}
             disabled={t.id === 'inspect' && !selected}
+            data-testid={`tab-${t.id}`}
             className={`font-hand flex flex-1 items-center justify-center gap-1 px-2 py-2 text-lg disabled:opacity-40 ${tab === t.id ? 'bg-note' : 'hover:bg-paper-2'}`}
           >
             {t.label}
