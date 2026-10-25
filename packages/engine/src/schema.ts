@@ -155,6 +155,7 @@ export const levelSchema = z.object({
   fixedNodes: z.array(designNode),
   traffic: z.object({
     ticks: z.number().int().positive(),
+    usageScale: z.number().positive().max(1).optional(),
     kinds: z.array(
       z.object({
         id: z.string(),

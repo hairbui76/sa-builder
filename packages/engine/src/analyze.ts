@@ -26,11 +26,15 @@ export function analyze(
     for (const f of cn.def.flags ?? []) flags.add(f);
     for (const t of cn.def.tech ?? []) tech.add(t);
     opsMonthsPerYear += cn.def.opsMonthsPerYear ?? 0;
-    const mult = regionMult.get(cn.region) ?? 1;
+    const mult = cn.def.props?.external ? 1 : regionMult.get(cn.region) ?? 1;
     const instances = cn.def.settings?.count ? Math.max(cn.count, cn.node.settings.count ?? cn.count) : 1;
     let monthly = cn.tier.monthlyUsd * instances * mult;
     if (cn.node.settings.standby && cn.def.settings?.standby) monthly *= 2;
-    const usage = (cn.tier.perMillionUsd ?? 0) * (sim.nodes[id]?.avgOps ?? 0) * MILLION_OPS_PER_MONTH_PER_RPS;
+    const usage =
+      (cn.tier.perMillionUsd ?? 0) *
+      (sim.nodes[id]?.avgOps ?? 0) *
+      MILLION_OPS_PER_MONTH_PER_RPS *
+      (level.traffic.usageScale ?? 1);
     monthly += usage;
     if (monthly > 0) costLines.push({ label: cn.label, monthlyUsd: round(monthly, 2), nodeId: id });
   }
@@ -103,6 +107,11 @@ export function analyze(
     breach_pct: sim.breachPct,
     fleet_util_pct: utilN > 0 ? round((utilSum / utilN) * 100, 1) : 0,
   });
+  for (const id of compiled.order) {
+    const key = `peak_util_pct:${compiled.nodes[id].def.type}`;
+    const v = round((sim.nodes[id]?.peakUtil ?? 0) * 100, 1);
+    if (v > (metrics[key] ?? -1)) metrics[key] = v;
+  }
   for (const [k, v] of Object.entries(sim.perKind)) {
     metrics[`answered_pct:${k}`] = v.answeredPct;
     metrics[`latency_ms:${k}`] = v.avgLatencyMs;

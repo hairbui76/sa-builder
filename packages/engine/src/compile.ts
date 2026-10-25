@@ -267,7 +267,11 @@ export function compile(level: Level, design: Design, catalog: Record<string, Co
     const servesFamily = (id: string, family: string, depth: number): boolean => {
       const d = nodes[id].def;
       if (d.behavior === 'link') return depth < MAX_DEPTH && outs[id].some((o) => servesFamily(o, family, depth + 1));
-      if (d.behavior === 'provider' || d.behavior === 'cache' || d.behavior === 'queue') return !!d.provides?.includes(family);
+      if (d.behavior === 'cache') {
+        // Read-through: a cache only takes a family it can fall back on for misses.
+        return !!d.provides?.includes(family) && depth < MAX_DEPTH && outs[id].some((o) => servesFamily(o, family, depth + 1));
+      }
+      if (d.behavior === 'provider' || d.behavior === 'queue') return !!d.provides?.includes(family);
       return false;
     };
 
@@ -383,7 +387,16 @@ export function compile(level: Level, design: Design, catalog: Record<string, Co
           deliver(hit, nextFlags);
           frac -= hit;
         }
-        const next = outs[id].filter(acceptsIngress);
+        const accepting = outs[id].filter(acceptsIngress);
+        // Prefer a store that serves this target directly, then an edge cache for cacheable kinds.
+        const score = (n: string) => {
+          const d = nodes[n].def;
+          if (d.behavior === 'provider') return 3;
+          if (d.behavior === 'edge_cache' && kind.edgeCacheable) return 2;
+          return 1;
+        };
+        const top = accepting.length > 0 ? Math.max(...accepting.map(score)) : 0;
+        const next = accepting.filter((n) => score(n) === top);
         if (next.length === 0) {
           route.lostFrac += frac;
           fail(`từ ${cn.label} không có đường đi tiếp.`, id);

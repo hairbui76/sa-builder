@@ -3,7 +3,7 @@ import type { Level, Phase, SimEvent, SimResult } from './types';
 import { powApprox, round } from './util';
 
 /** Ticks a node with a hot standby is unavailable during failover. */
-export const FAILOVER_TICKS = 3;
+export const FAILOVER_TICKS = 2;
 const UNLIMITED = Number.POSITIVE_INFINITY;
 
 export function rateAt(phases: Phase[], kindId: string, t: number): number {
@@ -44,8 +44,8 @@ export function simulate(level: Level, compiled: Compiled): SimResult {
   const state: Record<string, NodeState> = {};
   for (const id of ids) state[id] = { lost: 0, until: 0, slow: 1, slowUntil: 0 };
 
-  const nodeAcc: Record<string, { peak: number; opsSum: number; utilSum: number; utilTicks: number; down: number }> = {};
-  for (const id of ids) nodeAcc[id] = { peak: 0, opsSum: 0, utilSum: 0, utilTicks: 0, down: 0 };
+  const nodeAcc: Record<string, { peak: number; syncPeak: number; opsSum: number; utilSum: number; utilTicks: number; down: number }> = {};
+  for (const id of ids) nodeAcc[id] = { peak: 0, syncPeak: 0, opsSum: 0, utilSum: 0, utilTicks: 0, down: 0 };
 
   const kindAcc: Record<string, { offered: number; answered: number; latSum: number; pct: number[]; lat: number[] }> = {};
   for (const k of kinds) kindAcc[k.id] = { offered: 0, answered: 0, latSum: 0, pct: [], lat: [] };
@@ -194,10 +194,15 @@ export function simulate(level: Level, compiled: Compiled): SimResult {
       const cap = capOf(id);
       const acc = nodeAcc[id];
       acc.opsSum += ops;
-      if (healthy(id) <= 0) acc.down++;
+      if (healthy(id) <= 0) {
+        acc.down++;
+        continue;
+      }
       if (cap !== UNLIMITED) {
-        const u = cap === 0 ? (ops > 0 ? 10 : 0) : ops / cap;
+        const u = ops / cap;
         if (u > acc.peak) acc.peak = u;
+        const su = demand[id] / cap;
+        if (su > acc.syncPeak) acc.syncPeak = su;
         acc.utilSum += u > 1 ? 1 : u;
         acc.utilTicks++;
       }
@@ -237,6 +242,7 @@ export function simulate(level: Level, compiled: Compiled): SimResult {
     const a = nodeAcc[id];
     nodes[id] = {
       peakUtil: round(a.peak, 3),
+      syncPeakUtil: round(a.syncPeak, 3),
       avgOps: round(a.opsSum / ticks, 3),
       avgUtil: a.utilTicks > 0 ? round(a.utilSum / a.utilTicks, 3) : 0,
       downTicks: a.down,

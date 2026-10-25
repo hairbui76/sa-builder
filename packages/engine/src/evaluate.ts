@@ -168,7 +168,16 @@ function diagnose(level: Level, compiled: ReturnType<typeof compile>, sim: Retur
     const cn = compiled.nodes[id];
     const n = sim.nodes[id];
     if (!n) continue;
-    if (n.downTicks > 0) {
+    const failedOver = !!cn.node.settings.standby && !!cn.def.settings?.standby;
+    if (n.downTicks > 0 && failedOver) {
+      out.push({
+        code: 'failover',
+        severity: 'info',
+        text: `${cn.label} chết nhưng standby đã lên thay sau ${n.downTicks} giây.`,
+        nodeId: id,
+        conceptKey: 'failover',
+      });
+    } else if (n.downTicks > 0) {
       out.push({
         code: 'node_down',
         severity: 'error',
@@ -177,19 +186,19 @@ function diagnose(level: Level, compiled: ReturnType<typeof compile>, sim: Retur
         conceptKey: cn.def.settings?.standby ? 'failover' : 'single_point_of_failure',
       });
     }
-    if (n.peakUtil > 1.001 && n.downTicks === 0) {
+    if (n.syncPeakUtil > 1.001 && n.downTicks === 0) {
       out.push({
         code: 'overloaded',
         severity: 'error',
-        text: `${cn.label} quá tải: lúc đỉnh nhận ${round(n.peakUtil * 100, 0)}% công suất, phần vượt bị từ chối.`,
+        text: `${cn.label} quá tải: lúc đỉnh nhận ${round(n.syncPeakUtil * 100, 0)}% công suất, phần vượt bị từ chối.`,
         nodeId: id,
         conceptKey: cn.def.conceptKeys?.[0] ?? 'scale_out',
       });
-    } else if (n.peakUtil > 0.85 && n.downTicks === 0) {
+    } else if (n.syncPeakUtil > 0.85 && n.downTicks === 0) {
       out.push({
         code: 'hot',
         severity: 'warn',
-        text: `${cn.label} chạy tới ${round(n.peakUtil * 100, 0)}% công suất lúc đỉnh: latency tăng mạnh.`,
+        text: `${cn.label} chạy tới ${round(n.syncPeakUtil * 100, 0)}% công suất lúc đỉnh: latency tăng mạnh.`,
         nodeId: id,
         conceptKey: cn.def.conceptKeys?.[0] ?? 'scale_out',
       });
@@ -209,7 +218,7 @@ function diagnose(level: Level, compiled: ReturnType<typeof compile>, sim: Retur
   if (sim.breachPct > 0) {
     out.push({
       code: 'breach',
-      severity: 'error',
+      severity: 'warn',
       text: `${round(sim.breachPct, 1)}% request tấn công lọt tới code ứng dụng.`,
       conceptKey: 'defence_in_depth',
     });

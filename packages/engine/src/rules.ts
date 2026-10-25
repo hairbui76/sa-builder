@@ -74,7 +74,7 @@ export function checkRule(rule: Rule, ctx: RuleContext): RuleOutcome {
       const bad = analysis.touched[rule.tag].filter((id) => {
         const cn = compiled.nodes[id];
         const p = cn.def.props ?? {};
-        if (!(p.stateful || p.holdsData) || p.external || p.onPrem) return false;
+        if (!(p.stateful || p.holdsData) || p.external || p.onPrem || !cn.def.settings?.encryption) return false;
         let lvl: EncryptionLevel = cn.node.settings.encryption ?? 'none';
         if (lvl === 'kms' && !hasKms) lvl = 'at_rest';
         return ENC_ORDER[lvl] < ENC_ORDER[rule.level];

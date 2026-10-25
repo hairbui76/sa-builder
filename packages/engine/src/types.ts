@@ -300,7 +300,13 @@ export interface Level {
   regionLatencyMs: Record<string, number>;
   /** Nodes the level places and the player cannot remove (entries, legacy systems). */
   fixedNodes: DesignNode[];
-  traffic: { ticks: number; kinds: TrafficKind[]; phases: Phase[] };
+  traffic: {
+    ticks: number;
+    kinds: TrafficKind[];
+    phases: Phase[];
+    /** Share of a month spent at the simulated load, for usage pricing. Default 1. */
+    usageScale?: number;
+  };
   events: SimEvent[];
   palette: PaletteEntry[];
   limits: { maxNodes: number; maxEdges: number };
@@ -369,7 +375,18 @@ export interface SimResult {
     { offered: number; answered: number; answeredPct: number; avgLatencyMs: number; series: KindSeries }
   >;
   jobs: Record<string, { total: number; done: number; donePct: number; maxWaitS: number }>;
-  nodes: Record<string, { peakUtil: number; avgOps: number; avgUtil: number; downTicks: number }>;
+  nodes: Record<
+    string,
+    {
+      /** Peak share of capacity used, including jobs drained in the background. */
+      peakUtil: number;
+      /** Peak share of capacity used by requests someone is waiting on. */
+      syncPeakUtil: number;
+      avgOps: number;
+      avgUtil: number;
+      downTicks: number;
+    }
+  >;
   breachPct: number;
   eventsFired: { at: number; text: string }[];
 }
