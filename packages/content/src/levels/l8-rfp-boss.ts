@@ -20,8 +20,6 @@ export const level: Level = {
   order: 8,
   title: 'Boss: Hồ sơ dự thầu',
   client: 'Chuỗi bán lẻ Sao Việt',
-  story:
-    'Sao Việt có 200 cửa hàng và muốn một nền tảng mới: app khách hàng thân thiết, mua online trả bằng thẻ, xem tồn kho, và đồng bộ đơn từ POS về ERP trung tâm. Ba công ty tư vấn đang cạnh tranh. Bạn có 6 giờ họp với 6 người có quyền phủ quyết, và mỗi người muốn một thứ khác nhau.',
   brief: 'Thắng thầu: một kiến trúc đáp ứng ràng buộc của cả 6 người ra quyết định, và bảo vệ được từng lựa chọn.',
   difficulty: 4,
   boss: true,

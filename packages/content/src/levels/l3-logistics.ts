@@ -18,8 +18,6 @@ export const level: Level = {
   order: 3,
   title: 'DR bao nhiêu là đủ',
   client: 'Giao Nhanh Logistics',
-  story:
-    'Giao Nhanh có 3.000 shipper cập nhật trạng thái đơn liên tục và hàng trăm nghìn khách tra cứu đơn mỗi ngày. Năm ngoái data center của nhà cung cấp cũ mất điện 6 tiếng và họ bị sàn TMĐT phạt nặng. Giờ họ lên cloud và muốn "không bao giờ sập nữa". Nhưng ngân sách thì có hạn.',
   brief: 'Thiết kế hệ thống tracking chịu được hỏng hóc trong zone, và chọn mức DR phù hợp cho từng quy trình.',
   difficulty: 2,
   conceptKeys: ['ha_vs_dr', 'rto_rpo', 'dr_tiers'],

@@ -18,7 +18,7 @@ export function Discovery() {
           <div className="min-w-0 flex-1">
             <div className="text-sm text-muted">Bước 1 · Khảo sát</div>
             <h1 className="font-hand text-4xl">{level.client}</h1>
-            <p className="mt-1 max-w-3xl text-ink-2">{level.story}</p>
+            <p className="mt-1 max-w-3xl text-ink-2">{level.brief}</p>
           </div>
           <div className="sketch sketch-shadow p-3">
             <div className="flex items-center gap-1 text-sm text-muted">

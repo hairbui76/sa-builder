@@ -67,7 +67,7 @@ trên browser và server. `evaluationId = engineVersion + hash(level)`.
   `cache`, `queue`, `link` (VPN/đường riêng), `attachment` (KMS, IdP, audit log, monitoring — không nằm trên luồng).
 - **TrafficKind** (theo level): nguồn (`from` entry), `calls: [{family, count}]`, `async`
   (`jobCalls` cho worker), `carries` (`pii`, `card`), `malicious`.
-- **Level**: story, stakeholders, discovery (giờ họp, câu hỏi → fact), facts, rules, decisions
+- **Level**: brief, stakeholders, discovery (giờ họp, câu hỏi → fact), facts, rules, decisions
   (thẻ, option có effects), traffic phases, events, palette, limits, regions, team (số dev,
   kỹ năng, chi phí dev/tháng), budget, ngưỡng sao.
 - **Design**: nodes (type, settings, vị trí), edges, decisions đã chọn, câu hỏi đã hỏi, ghi chú ADR.

@@ -138,7 +138,6 @@ export const levelSchema = z.object({
   order: z.number().int(),
   title: z.string(),
   client: z.string(),
-  story: z.string(),
   brief: z.string(),
   difficulty: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)]),
   boss: z.boolean().optional(),

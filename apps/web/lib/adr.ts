@@ -10,7 +10,7 @@ export function buildAdr(level: Level, design: Design, result: EvalResult, catal
   const lines: string[] = [];
   lines.push(`# Hồ sơ kiến trúc: ${level.client}`, '');
   lines.push(`*${level.title}* · kết quả: ${result.passed ? 'đạt' : 'chưa đạt'}, ${result.stars}★, điểm ${result.overall}/100`, '');
-  lines.push('## Bối cảnh', '', level.story, '', `**Mục tiêu:** ${level.brief}`, '');
+  lines.push('## Mục tiêu', '', level.brief, '');
   lines.push('## Ràng buộc đã nắm được', '');
   const known = level.discovery.facts.filter((f) => facts.has(f.id));
   lines.push(...(known.length ? known.map((f) => `- ${f.text}`) : ['- (chưa khảo sát)']), '');

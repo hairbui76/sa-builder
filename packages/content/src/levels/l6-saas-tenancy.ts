@@ -12,8 +12,6 @@ export const level: Level = {
   order: 6,
   title: 'Khách nào cũng muốn riêng',
   client: 'NhânSự360 (SaaS quản lý nhân sự)',
-  story:
-    'NhânSự360 phục vụ 800 công ty nhỏ trên một hệ thống dùng chung. Vừa ký được Tập đoàn Vạn Phát, 12.000 nhân viên, chiếm 30% doanh thu. Tuần trước một khách nhỏ chạy script import làm cả hệ thống chậm 20 phút, và Vạn Phát đã gửi email hỏi thăm.',
   brief: 'Thiết kế mô hình multi-tenancy: khách nhỏ chạy rẻ, khách lớn được cách ly và không bị hàng xóm làm phiền.',
   difficulty: 3,
   conceptKeys: ['multi_tenancy', 'noisy_neighbor'],

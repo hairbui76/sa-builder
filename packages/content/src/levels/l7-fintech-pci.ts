@@ -9,8 +9,6 @@ export const level: Level = {
   order: 7,
   title: 'Kiểm toán gõ cửa',
   client: 'Ví điện tử VíXanh',
-  story:
-    'VíXanh cho người dùng nạp tiền vào ví bằng thẻ ngân hàng. Để mở rộng, họ cần chứng nhận PCI-DSS và giấy phép mới từ Ngân hàng Nhà nước. Kiểm toán viên sẽ đến sau 3 tháng. Hệ thống hiện tại để số thẻ chạy qua mọi thứ. Tuần trước còn có một đợt bot dò quét SQL injection.',
   brief: 'Thiết kế lại hệ thống ví để qua kiểm toán PCI-DSS với phạm vi nhỏ nhất, chặn được tấn công, và vẫn chạy ổn.',
   difficulty: 3,
   conceptKeys: ['pci_scope', 'tokenization', 'defence_in_depth', 'encryption_kms'],

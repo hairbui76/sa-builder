@@ -12,8 +12,6 @@ export const level: Level = {
   order: 4,
   title: 'Hệ thống cũ không được tắt',
   client: 'Siêu thị mini Phúc An',
-  story:
-    'Phúc An có 40 siêu thị mini, mọi tồn kho và đơn hàng nằm trong một ERP chạy trong phòng máy ở văn phòng. Giờ họ mở bán online trên cloud. ERP này đã 12 năm tuổi, không ai dám sửa, và "hơi yếu".',
   brief: 'Đưa shop online lên cloud, đọc tồn kho và đẩy đơn vào ERP on-prem mà không làm sập nó.',
   difficulty: 3,
   conceptKeys: ['legacy_integration', 'hybrid_connectivity', 'queue_buffering', 'anti_corruption_layer'],

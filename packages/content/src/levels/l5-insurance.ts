@@ -12,8 +12,6 @@ export const level: Level = {
   order: 5,
   title: 'Di chuyển không downtime',
   client: 'Bảo hiểm An Tâm',
-  story:
-    'An Tâm chạy cổng khách hàng và hệ thống bồi thường trên một monolith Java trong data center thuê. Hợp đồng thuê sắp hết. Giai đoạn 1: đưa cổng khách hàng và bồi thường lên cloud; core hợp đồng vẫn ở lại on-prem thêm 2 năm. Năm ngoái, mùa bão làm hệ thống bồi thường sập 2 ngày.',
   brief: 'Thiết kế kiến trúc đích trên cloud và chiến lược migration cho từng phần, không làm gián đoạn khách hàng.',
   difficulty: 3,
   conceptKeys: ['migration_6r', 'strangler_fig', 'cutover'],

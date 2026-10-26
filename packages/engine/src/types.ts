@@ -288,7 +288,6 @@ export interface Level {
   order: number;
   title: string;
   client: string;
-  story: string;
   brief: string;
   difficulty: 1 | 2 | 3 | 4;
   boss?: boolean;

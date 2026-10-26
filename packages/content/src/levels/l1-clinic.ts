@@ -9,8 +9,6 @@ export const level: Level = {
   order: 1,
   title: 'Hỏi trước khi vẽ',
   client: 'Chuỗi phòng khám Ánh Dương',
-  story:
-    'Ánh Dương có 12 phòng khám ở TP.HCM và muốn có web đặt lịch khám, kèm tin nhắc lịch trước giờ hẹn. Đây là hợp đồng đầu tiên của bạn trên ghế Solution Architect. Trước khi vẽ, bạn có 4 giờ họp với khách: hãy dùng chúng thật khôn ngoan.',
   brief: 'Thiết kế hệ thống đặt lịch khám chạy ổn cả lúc cao điểm, đúng mọi ràng buộc của khách hàng.',
   difficulty: 1,
   conceptKeys: ['requirements_elicitation', 'data_residency', 'queue_buffering'],

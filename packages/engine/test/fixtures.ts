@@ -33,7 +33,6 @@ export function makeLevel(over: Partial<Level> = {}): Level {
     order: 1,
     title: 'Test',
     client: 'C',
-    story: '',
     brief: '',
     difficulty: 1,
     conceptKeys: [],

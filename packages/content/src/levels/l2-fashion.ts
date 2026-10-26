@@ -9,8 +9,6 @@ export const level: Level = {
   order: 2,
   title: 'Build hay Buy',
   client: 'Thời trang Mây',
-  story:
-    'Mây bán quần áo qua Facebook và giờ muốn có web shop riêng: xem sản phẩm, tìm kiếm, thanh toán, và gửi email marketing. Team 3 dev rất hăng hái muốn tự viết mọi thứ. Bạn phải quyết định phần nào tự xây, phần nào mua.',
   brief: 'Dựng web shop chịu được flash sale và chọn build hay buy cho thanh toán, search, email marketing.',
   difficulty: 2,
   conceptKeys: ['build_vs_buy', 'tco', 'delivery_risk'],

@@ -79,7 +79,6 @@ export function WorldClient({ worldId }: { worldId: string }) {
           </div>
           <h2 className="font-hand text-3xl">{lv.title}</h2>
           <div className="text-sm font-medium text-ink-2">{lv.client}</div>
-          <p className="mt-3 text-sm leading-relaxed">{lv.story}</p>
           <div className="note mt-4 p-3 text-sm">
             <div className="font-hand text-lg">Mục tiêu</div>
             {lv.brief}
