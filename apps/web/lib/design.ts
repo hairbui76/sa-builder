@@ -1,12 +1,10 @@
-import { answeredQuestions, designSchema, type ComponentDef, type Design, type DesignNode, type Level, type NodeSettings } from '@sa/engine';
+import { designSchema, type ComponentDef, type Design, type DesignNode, type Level, type NodeSettings } from '@sa/engine';
 
 export function emptyDesign(level: Level): Design {
   return {
     nodes: level.fixedNodes.map((n) => ({ ...n, settings: { ...n.settings }, fixed: true })),
     edges: [],
     decisions: {},
-    asked: [],
-    notes: {},
   };
 }
 
@@ -40,8 +38,7 @@ export function loadDesign(level: Level, catalog: Record<string, ComponentDef>, 
     const v = d.decisions[dec.id];
     if (v && dec.options.some((o) => o.id === v)) decisions[dec.id] = v;
   }
-  const asked = answeredQuestions(level, { ...d, asked: d.asked });
-  return { nodes, edges, decisions, asked, notes: d.notes ?? {} };
+  return { nodes, edges, decisions };
 }
 
 /** Keep only settings the component supports, with values the level allows. */

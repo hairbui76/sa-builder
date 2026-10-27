@@ -25,14 +25,9 @@ describe.each(levels.map((l) => [l.id, l] as const))('level %s', (_id, level) =>
     expect(parsed.success, JSON.stringify(parsed.error?.issues?.slice(0, 3))).toBe(true);
     for (const p of level.palette) expect(catalog[p.type], p.type).toBeTruthy();
     for (const n of level.fixedNodes) expect(catalog[n.type], n.type).toBeTruthy();
-    const factIds = new Set(level.discovery.facts.map((f) => f.id));
-    for (const q of level.discovery.questions) for (const f of q.reveals ?? []) expect(factIds.has(f), f).toBe(true);
-    for (const r of level.rules) if (r.hiddenUntil) expect(factIds.has(r.hiddenUntil), r.hiddenUntil).toBe(true);
     const ruleIds = new Set(level.rules.map((r) => r.id));
-    for (const s of level.discovery.stakeholders) for (const c of s.concerns) expect(ruleIds.has(c), `${s.id}:${c}`).toBe(true);
+    expect(ruleIds.size).toBe(level.rules.length);
     for (const k of [...level.conceptKeys, ...level.rules.map((r) => r.conceptKey).filter(Boolean)]) expect(conceptByKey[k as string], k).toBeTruthy();
-    const hours = level.discovery.questions.filter((q) => ex.reference.asked.includes(q.id)).reduce((s, q) => s + q.hours, 0);
-    expect(hours).toBeLessThanOrEqual(level.discovery.hours);
   });
 
   it('reference design passes with at least 2 stars', () => {

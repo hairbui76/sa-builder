@@ -13,11 +13,12 @@ export function SidePanel() {
   const decided = useGame((s) => Object.keys(s.design.decisions).length);
   const selected = useGame((s) => s.selected);
   const setTab = useGame((s) => s.setTab);
-  const tabs: { id: RightTab; label: string; badge?: string }[] = [
+  const allTabs: { id: RightTab; label: string; badge?: string }[] = [
     { id: 'components', label: 'Thành phần' },
     { id: 'decisions', label: 'Quyết định', badge: level.decisions.length ? `${decided}/${level.decisions.length}` : undefined },
     { id: 'inspect', label: 'Cấu hình' },
   ];
+  const tabs = allTabs.filter((t) => t.id !== 'decisions' || level.decisions.length > 0);
   return (
     <aside className="sketch flex h-full w-full flex-col overflow-hidden">
       <div className="flex border-b-2 border-ink">
@@ -134,7 +135,6 @@ function Decisions() {
   const level = useGame((s) => s.level)!;
   const design = useGame((s) => s.design);
   const choose = useGame((s) => s.choose);
-  const setNote = useGame((s) => s.setNote);
   if (level.decisions.length === 0) {
     return <p className="text-sm text-ink-2">Level này không có thẻ quyết định: mọi lựa chọn nằm trên board.</p>;
   }
@@ -164,13 +164,6 @@ function Decisions() {
               );
             })}
           </div>
-          <textarea
-            value={design.notes?.[d.id] ?? ''}
-            onChange={(e) => setNote(d.id, e.target.value)}
-            placeholder="Ghi chú ADR (tuỳ chọn): vì sao bạn chọn phương án này?"
-            rows={2}
-            className="mt-2 w-full resize-y rounded-lg border border-line bg-paper p-2 text-xs outline-none focus:border-ink"
-          />
         </section>
       ))}
     </div>

@@ -1,16 +1,15 @@
 'use client';
 import Link from 'next/link';
-import { ArrowRight, ClipboardList, Lock, MessagesSquare, PenTool, PlayCircle } from 'lucide-react';
+import { ArrowRight, ListChecks, Lock, PenTool, PlayCircle } from 'lucide-react';
 import { levels, worlds } from '@sa/content';
 import { Stars } from '@/components/ui/Stars';
 import { titleFor, totalStars } from '@/lib/progress';
 import { useProgress } from '@/lib/useProgress';
 
 const STEPS = [
-  { icon: MessagesSquare, title: 'Khảo sát', text: 'Giờ họp có hạn. Hỏi đúng người để lộ ra ràng buộc thật.' },
-  { icon: PenTool, title: 'Thiết kế', text: 'Kéo thả kiến trúc và chọn build/buy, DR, tenancy, migration.' },
-  { icon: PlayCircle, title: 'Mô phỏng', text: 'Traffic, spike, sự cố và tấn công chạy qua thiết kế của bạn.' },
-  { icon: ClipboardList, title: 'Review', text: 'Hội đồng chấm 6 trụ cột Well-Architected, kinh doanh và triển khai.' },
+  { icon: ListChecks, title: 'Đọc mục tiêu', text: 'Traffic, ngân sách, pháp lý, deadline, hệ thống cũ.' },
+  { icon: PenTool, title: 'Dựng', text: 'Kéo thả kiến trúc, chọn build/buy, DR, tenancy, migration.' },
+  { icon: PlayCircle, title: 'Chạy', text: 'Traffic, sự cố và tấn công chạy qua. Đạt hết là qua.' },
 ];
 
 export function HomeClient() {
@@ -27,8 +26,8 @@ export function HomeClient() {
         <section>
           <h1 className="font-hand text-4xl">Chọn thế giới</h1>
           <p className="mt-1 max-w-2xl text-ink-2">
-            Mỗi level là một khách hàng thật: khảo sát, dựng kiến trúc, cho traffic và sự cố chạy qua, rồi bảo vệ thiết kế trước hội đồng. Không
-            chỉ client-server: cả ngân sách, pháp lý, hệ thống cũ, migration và con người.
+            Dựng kiến trúc, cho traffic và sự cố chạy qua, tìm chỗ sập rồi sửa. Không chỉ client-server: cả ngân sách, pháp lý, hệ thống cũ và
+            migration.
           </p>
 
           <Link href={`/levels/${next.id}`} className="sketch sketch-shadow mt-5 flex items-center gap-4 p-4 hover:bg-paper-2">
@@ -43,7 +42,7 @@ export function HomeClient() {
             </span>
           </Link>
 
-          <div className="mt-6 grid gap-3 sm:grid-cols-4">
+          <div className="mt-6 grid gap-3 sm:grid-cols-3">
             {STEPS.map((s, i) => (
               <div key={s.title} className="sketch-soft p-3">
                 <div className="flex items-center gap-2">

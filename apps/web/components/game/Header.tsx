@@ -1,8 +1,8 @@
 'use client';
 import Link from 'next/link';
-import { Activity, ChevronLeft, Lightbulb, MessagesSquare, Play, RotateCcw, Wallet } from 'lucide-react';
+import { Activity, ChevronLeft, Lightbulb, Play, RotateCcw, Wallet } from 'lucide-react';
 import { useState } from 'react';
-import { discoveredFacts, type EvalResult, type Level } from '@sa/engine';
+import type { EvalResult, Level } from '@sa/engine';
 import { usd } from '@/lib/labels';
 import { useGame } from './store';
 
@@ -15,13 +15,10 @@ function peakRates(level: Level) {
 
 export function Header({ preview, onRun }: { preview: EvalResult | null; onRun: () => void }) {
   const level = useGame((s) => s.level)!;
-  const design = useGame((s) => s.design);
   const running = useGame((s) => s.running);
-  const { setStage, reset, notify } = useGame.getState();
+  const { reset, notify } = useGame.getState();
   const [hint, setHint] = useState(0);
-  const facts = discoveredFacts(level, design);
   const budgetRule = level.rules.find((r) => r.check === 'metric' && r.metric === 'monthly_usd');
-  const budgetKnown = budgetRule && (!budgetRule.hiddenUntil || facts.has(budgetRule.hiddenUntil));
   const budget = budgetRule && budgetRule.check === 'metric' ? budgetRule.value : undefined;
   const cost = preview?.analysis.monthlyUsd ?? 0;
   const rates = peakRates(level);
@@ -60,27 +57,18 @@ export function Header({ preview, onRun }: { preview: EvalResult | null; onRun: 
             <b>{usd(cost)}</b>/tháng
           </div>
         </div>
-        <div className="w-36">
-          <div className="text-xs text-muted">Ngân sách</div>
-          {budgetKnown && budget ? (
-            <>
-              <div className="h-2 overflow-hidden rounded-full border border-ink bg-white">
-                <div className={`h-full ${cost > budget ? 'bg-bad' : 'bg-mint'}`} style={{ width: `${Math.min(100, (cost / budget) * 100)}%` }} />
-              </div>
-              <div className="text-xs">{usd(budget)}/tháng</div>
-            </>
-          ) : (
-            <div className="text-xs text-muted" title="Hỏi người cầm tiền trong buổi khảo sát">
-              chưa biết: hãy hỏi khách
+        {budget !== undefined && (
+          <div className="w-36">
+            <div className="text-xs text-muted">Ngân sách</div>
+            <div className="h-2 overflow-hidden rounded-full border border-ink bg-white">
+              <div className={`h-full ${cost > budget ? 'bg-bad' : 'bg-mint'}`} style={{ width: `${Math.min(100, (cost / budget) * 100)}%` }} />
             </div>
-          )}
-        </div>
+            <div className="text-xs">{usd(budget)}/tháng</div>
+          </div>
+        )}
       </div>
 
       <div className="flex items-center gap-2">
-        <button className="btn" onClick={() => setStage('discovery')} data-testid="open-discovery">
-          <MessagesSquare size={16} /> Khảo sát
-        </button>
         <button
           className="btn !px-2"
           title="Gợi ý"
@@ -96,7 +84,7 @@ export function Header({ preview, onRun }: { preview: EvalResult | null; onRun: 
           className="btn !px-2"
           title="Làm lại từ đầu"
           onClick={() => {
-            if (window.confirm('Xoá thiết kế và câu hỏi đã hỏi của level này?')) reset();
+            if (window.confirm('Xoá thiết kế của level này?')) reset();
           }}
         >
           <RotateCcw size={16} />

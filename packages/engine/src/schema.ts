@@ -75,8 +75,6 @@ export const designSchema = z.object({
   nodes: z.array(designNode),
   edges: z.array(z.object({ id: z.string(), from: z.string(), to: z.string() })),
   decisions: z.record(z.string()),
-  asked: z.array(z.string()),
-  notes: z.record(z.string()).optional(),
 });
 
 const call = z.object({ family: z.string(), count: z.number().positive() });
@@ -88,7 +86,6 @@ const ruleBase = {
   pillar,
   hard: z.boolean(),
   weight: z.number().positive().optional(),
-  hiddenUntil: z.string().optional(),
   conceptKey: z.string().optional(),
 };
 
@@ -182,31 +179,6 @@ export const levelSchema = z.object({
   events: z.array(simEvent),
   palette: z.array(z.object({ type: z.string(), tiers: z.array(z.string()).optional(), max: z.number().int().positive().optional() })),
   limits: z.object({ maxNodes: z.number().int().positive(), maxEdges: z.number().int().positive() }),
-  discovery: z.object({
-    hours: z.number().positive(),
-    stakeholders: z.array(
-      z.object({
-        id: z.string(),
-        name: z.string(),
-        role: z.string(),
-        avatar: z.string(),
-        intro: z.string(),
-        concerns: z.array(z.string()),
-        quotes: z.object({ happy: z.string(), neutral: z.string(), unhappy: z.string() }),
-      }),
-    ),
-    questions: z.array(
-      z.object({
-        id: z.string(),
-        stakeholder: z.string(),
-        text: z.string(),
-        hours: z.number().positive(),
-        answer: z.string(),
-        reveals: z.array(z.string()).optional(),
-      }),
-    ),
-    facts: z.array(z.object({ id: z.string(), text: z.string(), key: z.boolean() })),
-  }),
   decisions: z.array(
     z.object({
       id: z.string(),

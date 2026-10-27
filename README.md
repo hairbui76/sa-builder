@@ -1,8 +1,9 @@
 # SA Builder
 
-Game web dạy tư duy **Solution Architect**. Mỗi level là một khách hàng: bạn khảo sát stakeholder với số giờ họp có hạn,
-dựng kiến trúc trên board, chọn các quyết định (build/buy, DR, tenancy, migration…), cho traffic, sự cố và tấn công chạy qua,
-rồi hội đồng chấm theo 6 trụ cột Well-Architected cộng phù hợp kinh doanh và rủi ro triển khai.
+Game web dạy tư duy **Solution Architect**, gameplay tối giản: đọc mục tiêu → dựng kiến trúc trên board → chạy.
+Traffic, sự cố và tấn công chạy qua thiết kế; đạt mọi ràng buộc là qua level. Ràng buộc không chỉ là tải và latency
+mà cả ngân sách, TCO, deadline, pháp lý (NĐ 13/2023, PCI-DSS), DR, hệ thống cũ và migration; một số level có thêm
+thẻ quyết định (build/buy, mức DR, tenancy, cutover…).
 
 Lấy cảm hứng từ [systemdesign.200lab.io](https://systemdesign.200lab.io) và [gonnacrash.com](https://gonnacrash.com),
 nhưng đi xa hơn client-server: ngân sách, pháp lý (NĐ 13/2023, PCI-DSS), hệ thống cũ, migration, multi-tenancy và con người.
@@ -30,7 +31,7 @@ pnpm --filter @sa/content exec tsx scripts/report.ts [levelId]   # xem điểm l
 ```
 packages/engine    Engine thuần TypeScript, deterministic: compile graph → phân tích tĩnh → mô phỏng → rule → review
 packages/content   Catalog thành phần trung lập (+ mapping AWS/Azure/GCP/On-prem), khái niệm, World 1 (8 level)
-apps/web           Next.js 16 + React Flow: bản đồ, khảo sát, board, quyết định, chạy, review, khái niệm, bảng xếp hạng
+apps/web           Next.js 16 + React Flow: bản đồ, board, quyết định, chạy, kết quả, khái niệm, bảng xếp hạng
 supabase/          Migration SQL (profiles, runs, level_progress, leaderboard, RLS)
 docs/superpowers   Spec thiết kế và kế hoạch triển khai
 ```
@@ -46,9 +47,9 @@ Cùng input cho cùng kết quả trên browser và server, nên server chấm l
    (hạ tầng × 36 + chi phí một lần + dev-tháng xây dựng và vận hành), thời gian ra mắt, công nghệ team chưa quen.
 3. **Mô phỏng** (fluid, tick 1 giây): capacity × instance còn sống, latency theo utilization, failover nhờ standby,
    job xả theo capacity còn dư của hệ thống phía sau, WAF chặn tấn công, quota theo tenant.
-4. **Rule**: `metric`, `residency`, `encryption`, `on_path`, `isolation`, `flag`, `decision`. Rule có thể ẩn tới khi
-   khảo sát ra (`hiddenUntil`) nhưng **vẫn được chấm**: đó là bài học của khảo sát.
-5. **Review**: điểm từng trụ cột, verdict từng stakeholder, lý do kèm khái niệm, sao (1★ qua mọi ràng buộc cứng,
+4. **Rule**: `metric`, `residency`, `encryption`, `on_path`, `isolation`, `flag`, `decision`; ràng buộc cứng (trượt là
+   không qua) và điểm cộng.
+5. **Kết quả**: mục tiêu đạt/trượt, lý do kèm khái niệm, sao (1★ qua mọi ràng buộc cứng,
    2★ điểm ≥ 70, 3★ điểm ≥ 85 và TCO dưới ngưỡng của level).
 
 Engine chỉ biết ~10 *behavior* (`router`, `compute`, `provider`, `cache`, `queue`, `link`…). Mỗi thành phần là dữ liệu
@@ -83,7 +84,7 @@ Vercel: Root Directory `apps/web`, Install Command `pnpm install`, Build Command
 
 ## Lộ trình
 
-- [x] MVP: engine, World 1 "Hợp đồng đầu tiên" (8 level), vòng Khảo sát → Thiết kế → Mô phỏng → Review, khái niệm, Supabase tuỳ chọn
+- [x] MVP: engine, World 1 "Hợp đồng đầu tiên" (8 level), vòng Đọc mục tiêu → Dựng → Chạy, khái niệm, Supabase tuỳ chọn
 - [ ] Studio + gallery cộng đồng (fork, duyệt)
 - [ ] World theo provider: AWS, GCP, Azure, On-premise (palette chỉ gồm dịch vụ của provider đó)
 - [ ] Career mode: một công ty qua nhiều năm, quyết định cũ và nợ kỹ thuật đi theo

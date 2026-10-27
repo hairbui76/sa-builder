@@ -19,17 +19,15 @@ describe('loadDesign', () => {
       nodes: [...ref.nodes, { id: 'ghost', type: 'quantum_db', x: 0, y: 0, settings: {} }, { id: 'kv', type: 'kv_store', x: 0, y: 0, settings: {} }],
       edges: [...ref.edges, { id: 'g', from: 'app', to: 'ghost' }, { id: 'k', from: 'app', to: 'kv' }],
       decisions: { not_a_decision: 'x' },
-      asked: [...ref.asked, 'q_missing'],
     };
     const d = loadDesign(level, catalog, raw);
     expect(d.nodes.some((n) => n.id === 'ghost' || n.id === 'kv')).toBe(false);
     expect(d.edges.some((e) => e.to === 'ghost' || e.to === 'kv')).toBe(false);
     expect(d.decisions).toEqual({});
-    expect(d.asked).toEqual(ref.asked);
   });
 
   it('restores fixed nodes even if a saved design removed them', () => {
-    const d = loadDesign(level, catalog, { nodes: [], edges: [], decisions: {}, asked: [] });
+    const d = loadDesign(level, catalog, { nodes: [], edges: [], decisions: {} });
     expect(d.nodes.find((n) => n.id === 'users')?.fixed).toBe(true);
   });
 });
@@ -107,28 +105,13 @@ describe('layeredLayout', () => {
 
   it('terminates on cycles', async () => {
     const { layeredLayout } = await import('@/lib/layout');
-    const d = { nodes: [{ id: 'a', type: 'users', x: 0, y: 0, settings: {} }, { id: 'b', type: 'load_balancer', x: 0, y: 0, settings: {} }, { id: 'c', type: 'load_balancer', x: 0, y: 0, settings: {} }], edges: [{ id: '1', from: 'a', to: 'b' }, { id: '2', from: 'b', to: 'c' }, { id: '3', from: 'c', to: 'b' }], decisions: {}, asked: [] };
+    const d = { nodes: [{ id: 'a', type: 'users', x: 0, y: 0, settings: {} }, { id: 'b', type: 'load_balancer', x: 0, y: 0, settings: {} }, { id: 'c', type: 'load_balancer', x: 0, y: 0, settings: {} }], edges: [{ id: '1', from: 'a', to: 'b' }, { id: '2', from: 'b', to: 'c' }, { id: '3', from: 'c', to: 'b' }], decisions: {} };
     expect(() => layeredLayout(d, catalog)).not.toThrow();
   });
 });
 
-describe('buildAdr', () => {
-  it('records decisions, notes, architecture and results', async () => {
-    const { buildAdr } = await import('@/lib/adr');
-    const { evaluate } = await import('@sa/engine');
-    const l2 = levels.find((l) => l.id === 'build_or_buy')!;
-    const d = { ...levelExamples[l2.id].reference, notes: { payments: 'PSP nhanh và rẻ hơn tự đạt PCI.' } };
-    const md = buildAdr(l2, d, evaluate(l2, d, catalog), catalog);
-    expect(md).toContain('# Hồ sơ kiến trúc: Thời trang Mây');
-    expect(md).toContain('ADR-01: Thanh toán');
-    expect(md).toContain('PSP nhanh và rẻ hơn tự đạt PCI.');
-    expect(md).toContain('Tự xây xử lý thẻ');
-    expect(md).toContain('TCO 3 năm');
-  });
-});
-
 describe('server-side input hygiene', () => {
-  it('drops unsupported settings, foreign regions and over-budget questions', () => {
+  it('drops unsupported settings and foreign regions', () => {
     const l6 = levels.find((l) => l.id === 'everyone_wants_own')!;
     const raw = {
       nodes: [
@@ -138,7 +121,6 @@ describe('server-side input hygiene', () => {
       ],
       edges: [],
       decisions: {},
-      asked: l6.discovery.questions.map((q) => q.id),
     };
     const d = loadDesign(l6, catalog, raw);
     const lb = d.nodes.find((n) => n.id === 'lb')!;
@@ -148,7 +130,5 @@ describe('server-side input hygiene', () => {
     expect(app.settings.region).toBe(l6.defaultRegion);
     expect(app.settings.count).toBe(12);
     expect(app.settings.tier).toBe('s');
-    const hours = l6.discovery.questions.filter((q) => d.asked.includes(q.id)).reduce((s, q) => s + q.hours, 0);
-    expect(hours).toBeLessThanOrEqual(l6.discovery.hours);
   });
 });

@@ -58,65 +58,6 @@ export const level: Level = {
     { type: 'monitoring' },
   ],
   limits: { maxNodes: 10, maxEdges: 16 },
-  discovery: {
-    hours: 4,
-    stakeholders: [
-      {
-        id: 'coo',
-        name: 'Anh Phong',
-        role: 'Giám đốc vận hành',
-        avatar: 'P',
-        intro: 'Người bị sàn TMĐT gọi điện lúc 3 giờ sáng năm ngoái.',
-        concerns: ['track_ok', 'update_ok', 'rto_core', 'rpo_core'],
-        quotes: {
-          happy: 'Zone chết mà shipper không hề hay biết. Đúng thứ tôi cần.',
-          neutral: 'Ổn, nhưng nếu cả region sập thì tôi vẫn lo.',
-          unhappy: 'Sập thêm một lần nữa là mất hợp đồng với sàn.',
-        },
-      },
-      {
-        id: 'cfo',
-        name: 'Chị Ngân',
-        role: 'Giám đốc tài chính',
-        avatar: 'N',
-        intro: 'Đồng ý chi cho DR, nhưng muốn biết mỗi đồng mua được gì.',
-        concerns: ['budget', 'rto_report'],
-        quotes: {
-          happy: 'Chi đúng chỗ. Báo cáo chậm một ngày cũng chẳng sao.',
-          neutral: 'Hơi tốn, nhưng chấp nhận được.',
-          unhappy: 'Bạn đang mua bảo hiểm cho cả những thứ không đáng.',
-        },
-      },
-      {
-        id: 'data',
-        name: 'Anh Quân',
-        role: 'Trưởng nhóm dữ liệu & báo cáo',
-        avatar: 'Q',
-        intro: 'Phụ trách báo cáo vận hành và BI.',
-        concerns: ['rto_report', 'backup'],
-        quotes: {
-          happy: 'Báo cáo có backup đàng hoàng, vậy là đủ.',
-          neutral: 'Tạm ổn.',
-          unhappy: 'Mất dữ liệu báo cáo là mất số liệu đối soát.',
-        },
-      },
-    ],
-    questions: [
-      { id: 'q_sla', stakeholder: 'coo', hours: 1, text: 'Hệ thống tracking được phép ngừng tối đa bao lâu?', answer: 'Hợp đồng với sàn: tracking ngừng quá 30 phút là bị phạt 50.000 đô mỗi lần.', reveals: ['sla'] },
-      { id: 'q_loss', stakeholder: 'coo', hours: 1, text: 'Mất bao nhiêu phút dữ liệu thì chấp nhận được?', answer: 'Tối đa 5 phút. Mất nhiều hơn là shipper phải gọi lại từng khách để xác nhận.', reveals: ['rpo'] },
-      { id: 'q_budget', stakeholder: 'cfo', hours: 1, text: 'Ngân sách hạ tầng hằng tháng là bao nhiêu?', answer: 'Cả hệ thống, tính luôn DR, tối đa 1.100 đô một tháng.', reveals: ['budget'] },
-      { id: 'q_report', stakeholder: 'data', hours: 0.5, text: 'Hệ thống báo cáo cần khôi phục nhanh cỡ nào?', answer: 'Báo cáo vận hành dùng cho họp sáng. Chậm một ngày cũng được, miễn không mất dữ liệu quá vài giờ.', reveals: ['report'] },
-      { id: 'q_past', stakeholder: 'coo', hours: 0.5, text: 'Sự cố năm ngoái xảy ra thế nào?', answer: 'Cả data center mất điện. Database không có bản dự phòng, phải chờ khôi phục từ backup 6 tiếng.', reveals: ['history'] },
-      { id: 'q_multi', stakeholder: 'data', hours: 1, text: 'Có cần chạy active-active nhiều region không?', answer: 'Team chưa ai làm ghi dữ liệu hai region. Nghe nói phức tạp lắm.' },
-    ],
-    facts: [
-      { id: 'sla', text: 'Tracking ngừng quá 30 phút bị phạt $50.000/lần (RTO ≤ 30 phút).', key: true },
-      { id: 'rpo', text: 'Mất tối đa 5 phút dữ liệu đơn (RPO ≤ 5 phút).', key: true },
-      { id: 'budget', text: 'Ngân sách cả hệ thống kể cả DR: tối đa $1.100/tháng.', key: true },
-      { id: 'report', text: 'Báo cáo được phép khôi phục trong 1 ngày.', key: false },
-      { id: 'history', text: 'Sự cố cũ: database không có bản dự phòng.', key: false },
-    ],
-  },
   decisions: [
     { id: 'dr_core', title: 'DR cho tracking & điều phối', prompt: 'Khi cả region sập, hệ thống tracking khôi phục thế nào?', conceptKey: 'dr_tiers', options: drOptions('core', [20, 180, 420, 1300]) },
     { id: 'dr_report', title: 'DR cho báo cáo & BI', prompt: 'Khi cả region sập, hệ thống báo cáo khôi phục thế nào?', conceptKey: 'dr_tiers', options: drOptions('report', [10, 90, 210, 650]) },
@@ -125,10 +66,10 @@ export const level: Level = {
     { id: 'track_ok', check: 'metric', metric: 'answered_pct:track', op: '>=', value: 99, unit: '%', text: 'Tra cứu đơn: ít nhất 99% được phản hồi, kể cả khi có sự cố', failText: 'Tra cứu đơn bị rớt khi có sự cố.', pillar: 'reliability', hard: true, conceptKey: 'single_point_of_failure' },
     { id: 'update_ok', check: 'metric', metric: 'answered_pct:update', op: '>=', value: 98, unit: '%', text: 'Cập nhật trạng thái: ít nhất 98% được phản hồi', failText: 'Shipper không cập nhật được trạng thái khi có sự cố.', pillar: 'reliability', hard: true, conceptKey: 'failover' },
     { id: 'track_fast', check: 'metric', metric: 'latency_ms:track', op: '<=', value: 200, unit: 'ms', text: 'Tra cứu đơn: trung bình dưới 200 ms', failText: 'Tra cứu đơn chậm.', pillar: 'performance', hard: true, conceptKey: 'caching' },
-    { id: 'rto_core', check: 'metric', metric: 'rto_core_min', op: '<=', value: 30, unit: 'min', text: 'Tracking khôi phục trong 30 phút khi mất region', failText: 'Mức DR của tracking không đạt RTO 30 phút trong hợp đồng với sàn.', pillar: 'reliability', hard: true, hiddenUntil: 'sla', conceptKey: 'rto_rpo' },
-    { id: 'rpo_core', check: 'metric', metric: 'rpo_core_min', op: '<=', value: 5, unit: 'min', text: 'Tracking mất tối đa 5 phút dữ liệu', failText: 'Mức DR của tracking có thể mất quá 5 phút dữ liệu.', pillar: 'reliability', hard: true, hiddenUntil: 'rpo', conceptKey: 'rto_rpo' },
-    { id: 'budget', check: 'metric', metric: 'monthly_usd', op: '<=', value: 1100, unit: '$', text: 'Chi phí tối đa $1.100/tháng kể cả DR', failText: 'Vượt ngân sách: DR đắt nhất không phải lúc nào cũng cần.', pillar: 'cost', hard: true, hiddenUntil: 'budget', conceptKey: 'dr_tiers' },
-    { id: 'rto_report', check: 'metric', metric: 'rto_report_min', op: '>=', value: 240, unit: 'min', text: 'Không chi quá tay cho DR của báo cáo', failText: 'Báo cáo chỉ cần khôi phục trong một ngày; mức DR cao hơn là tiền bỏ phí.', pillar: 'cost', hard: false, hiddenUntil: 'report', conceptKey: 'rto_rpo' },
+    { id: 'rto_core', check: 'metric', metric: 'rto_core_min', op: '<=', value: 30, unit: 'min', text: 'Tracking khôi phục trong 30 phút khi mất region', failText: 'Mức DR của tracking không đạt RTO 30 phút trong hợp đồng với sàn.', pillar: 'reliability', hard: true, conceptKey: 'rto_rpo' },
+    { id: 'rpo_core', check: 'metric', metric: 'rpo_core_min', op: '<=', value: 5, unit: 'min', text: 'Tracking mất tối đa 5 phút dữ liệu', failText: 'Mức DR của tracking có thể mất quá 5 phút dữ liệu.', pillar: 'reliability', hard: true, conceptKey: 'rto_rpo' },
+    { id: 'budget', check: 'metric', metric: 'monthly_usd', op: '<=', value: 1100, unit: '$', text: 'Chi phí tối đa $1.100/tháng kể cả DR', failText: 'Vượt ngân sách: DR đắt nhất không phải lúc nào cũng cần.', pillar: 'cost', hard: true, conceptKey: 'dr_tiers' },
+    { id: 'rto_report', check: 'metric', metric: 'rto_report_min', op: '>=', value: 240, unit: 'min', text: 'Báo cáo chỉ cần khôi phục trong 1 ngày: đừng chi quá tay cho DR của nó', failText: 'Báo cáo chỉ cần khôi phục trong một ngày; mức DR cao hơn là tiền bỏ phí.', pillar: 'cost', hard: false, conceptKey: 'rto_rpo' },
     { id: 'backup', check: 'flag', flag: 'backup', present: true, text: 'Có backup tách biệt (chống xoá nhầm, ransomware)', failText: 'Không có Backup Vault: standby và DR không cứu được khi dữ liệu bị xoá nhầm.', pillar: 'reliability', hard: false, conceptKey: 'ha_vs_dr' },
     { id: 'ops_watch', check: 'flag', flag: 'monitoring', present: true, text: 'Có giám sát và cảnh báo', failText: 'Không có monitoring: sự cố được phát hiện qua điện thoại của sàn.', pillar: 'ops', hard: false, conceptKey: 'observability' },
     { id: 'util', check: 'metric', metric: 'fleet_util_pct', op: '>=', value: 25, unit: '%', text: 'Sử dụng tài nguyên trung bình ≥ 25%', failText: 'Hạ tầng thừa so với tải.', pillar: 'sustainability', hard: false, conceptKey: 'sustainability' },
@@ -137,7 +78,7 @@ export const level: Level = {
   hints: [
     'HA (trong một region) và DR (khi mất cả region) là hai chuyện khác nhau. Sự cố trong mô phỏng là hỏng trong zone; thẻ DR lo phần mất region.',
     'Database có tuỳ chọn standby. App Server cần N+1 sau Load Balancer.',
-    'Mỗi quy trình có RTO/RPO riêng. Hỏi xem báo cáo cần khôi phục nhanh cỡ nào.',
+    'Mỗi quy trình có RTO/RPO riêng: tracking cần nhanh, báo cáo thì không.',
   ],
 };
 
@@ -153,7 +94,6 @@ export const examples: LevelExamples = {
     ],
     wires: 'users>lb lb>app app>cache cache>db app>db',
     decisions: { dr_core: 'warm', dr_report: 'backup' },
-    asked: ['q_sla', 'q_loss', 'q_budget', 'q_report'],
   }),
   naive: [
     {

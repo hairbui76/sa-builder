@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { Lock, Users } from 'lucide-react';
+import { Lock } from 'lucide-react';
 import { conceptByKey, levels as allLevels, worlds } from '@sa/content';
 import { Stars } from '@/components/ui/Stars';
 import { DIFFICULTY } from '@/lib/labels';
@@ -90,22 +90,15 @@ export function WorldClient({ worldId }: { worldId: string }) {
               </Link>
             ))}
           </div>
-          <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
-            <div className="sketch-soft p-2">
-              <div className="text-xs text-muted">Stakeholder</div>
-              <div className="flex items-center gap-1">
-                <Users size={14} /> {lv.discovery.stakeholders.length} người · {lv.discovery.hours} giờ họp
-              </div>
+          {p && (
+            <div className="mt-4 flex items-center gap-2 text-sm">
+              <Stars value={p.bestStars} />
+              <span className="text-xs text-muted">{p.runs} lượt chạy</span>
             </div>
-            <div className="sketch-soft p-2">
-              <div className="text-xs text-muted">Kết quả tốt nhất</div>
-              <Stars value={p?.bestStars ?? 0} />
-              {p ? <span className="ml-1 text-xs text-muted">{p.runs} lượt chạy</span> : null}
-            </div>
-          </div>
+          )}
           {unlocked ? (
             <Link href={`/levels/${lv.id}`} className="btn btn-primary mt-5 w-full justify-center text-xl">
-              {p ? 'Chơi tiếp' : 'Nhận hợp đồng'}
+              {p ? 'Chơi tiếp' : 'Chơi'}
             </Link>
           ) : (
             <div className="mt-5 flex items-center justify-center gap-2 rounded-lg border-2 border-dashed border-line p-3 text-sm text-muted">

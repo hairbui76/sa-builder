@@ -7,7 +7,6 @@ import { recordRun } from '@/lib/progress';
 import { safeStorage } from '@/lib/storage';
 import { browserClient } from '@/lib/supabase/browser';
 import { Board } from './Board';
-import { Discovery } from './Discovery';
 import { GoalsPanel } from './GoalsPanel';
 import { Header } from './Header';
 import { Review } from './Review';
@@ -48,7 +47,7 @@ export function GameClient({ levelId }: { levelId: string }) {
 
   // Live estimate: positions do not matter, so ignore them to avoid re-running on every drag frame.
   const evalKey = useMemo(
-    () => JSON.stringify([design.nodes.map((n) => [n.id, n.type, n.settings]), design.edges, design.decisions, design.asked]),
+    () => JSON.stringify([design.nodes.map((n) => [n.id, n.type, n.settings]), design.edges, design.decisions]),
     [design],
   );
   const preview: EvalResult | null = useMemo(() => {
@@ -137,7 +136,6 @@ export function GameClient({ levelId }: { levelId: string }) {
           </div>
         )}
       </div>
-      {stage === 'discovery' && <Discovery />}
       {stage === 'review' && result && <Review result={result} level={level} verified={verified} />}
       {toast && (
         <div

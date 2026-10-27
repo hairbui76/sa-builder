@@ -2,6 +2,19 @@
 
 Ngày: 2026-10-25 · Trạng thái: đã duyệt qua hội thoại (phần 1–2), phần 3–5 do Claude chốt theo yêu cầu "làm nốt".
 
+## Cập nhật 2026-10-27: gameplay tối giản
+
+Theo yêu cầu của người dùng, gameplay rút về 3 bước **Đọc mục tiêu → Dựng → Chạy** (như 200Lab). Thay thế các phần
+tương ứng bên dưới:
+
+- Bỏ đoạn story khách hàng, bước Khảo sát (stakeholder, giờ họp, câu hỏi, fact) và ràng buộc ẩn (`hiddenUntil`):
+  mọi ràng buộc hiện thẳng trong panel Mục tiêu, kèm ngữ cảnh ngắn trong chính câu ràng buộc.
+- Bỏ verdict stakeholder, biểu đồ trụ cột, ghi chú/xuất ADR. Màn kết quả chỉ còn: đạt/trượt + sao, danh sách mục
+  tiêu, lý do kèm khái niệm, một dòng chi phí (tháng, TCO, thời gian ra mắt khi level có ràng buộc đó).
+- Giữ: thẻ quyết định, các loại ràng buộc SA (ngân sách, TCO, deadline, residency, PCI, DR, legacy), engine.
+  Điểm trụ cột vẫn được engine tính nội bộ để xếp sao.
+- Level 1 đổi trọng tâm thành "Dữ liệu ở lại Việt Nam" (residency + queue).
+
 ## 1. Mục tiêu và phạm vi
 
 SA Builder là game web công khai dạy tư duy **Solution Architect**, lấy cảm hứng từ

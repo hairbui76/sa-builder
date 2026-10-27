@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { compile } from '../src/compile';
-import { answeredQuestions, discoveredFacts, evaluate } from '../src/evaluate';
+import { evaluate } from '../src/evaluate';
 import { simulate } from '../src/simulate';
 import { catalog, design, makeLevel, node, usersNode } from './fixtures';
 
@@ -45,26 +45,6 @@ describe('regressions from the branch review', () => {
     const c = compile(level, d, catalog);
     expect(c.nodes.app.region).toBe(level.defaultRegion);
     expect(c.routes.read.quotaFrac).toBe(0);
-  });
-
-  it('counts only the questions that fit in the meeting hours', () => {
-    const level = makeLevel({
-      discovery: {
-        hours: 1,
-        stakeholders: [],
-        questions: [
-          { id: 'a', stakeholder: 's', text: '', hours: 1, answer: '', reveals: ['fa'] },
-          { id: 'b', stakeholder: 's', text: '', hours: 1, answer: '', reveals: ['fb'] },
-        ],
-        facts: [
-          { id: 'fa', text: '', key: true },
-          { id: 'fb', text: '', key: true },
-        ],
-      },
-    });
-    const d = design([usersNode()], [], { asked: ['a', 'b', 'a'] });
-    expect(answeredQuestions(level, d)).toEqual(['a']);
-    expect([...discoveredFacts(level, d)]).toEqual(['fa']);
   });
 
   it('a request that misses several calls is lost once, not once per call', () => {

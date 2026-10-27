@@ -7,7 +7,7 @@ const body = Be_Vietnam_Pro({ weight: ['400', '500', '600', '700'], subsets: ['l
 
 export const metadata: Metadata = {
   title: 'SA Builder — Game cho Solution Architect',
-  description: 'Khảo sát khách hàng, dựng kiến trúc, chạy mô phỏng và bảo vệ thiết kế trước hội đồng.',
+  description: 'Dựng kiến trúc, cho traffic và sự cố chạy qua, đạt mọi ràng buộc của một Solution Architect.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

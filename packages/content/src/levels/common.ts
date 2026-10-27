@@ -28,7 +28,6 @@ export interface ExampleSpec {
   /** Space separated wires "a>b b>c". */
   wires: string;
   decisions?: Record<string, string>;
-  asked?: string[];
 }
 
 /** Build a design for golden tests and the solution viewer, laying nodes out in a simple grid. */
@@ -45,7 +44,7 @@ export function example(fixedNodes: DesignNode[], spec: ExampleSpec): Design {
       const [from, to] = w.split('>');
       return { id: `w${i}`, from, to };
     });
-  return { nodes, edges, decisions: spec.decisions ?? {}, asked: spec.asked ?? [] };
+  return { nodes, edges, decisions: spec.decisions ?? {} };
 }
 
 export interface LevelExamples {

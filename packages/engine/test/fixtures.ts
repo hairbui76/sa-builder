@@ -54,7 +54,6 @@ export function makeLevel(over: Partial<Level> = {}): Level {
       .filter((t) => t !== 'users')
       .map((type) => ({ type })),
     limits: { maxNodes: 20, maxEdges: 40 },
-    discovery: { hours: 4, stakeholders: [], questions: [], facts: [] },
     decisions: [],
     rules: [
       { id: 'answered', check: 'metric', metric: 'answered_pct:read', op: '>=', value: 99, unit: '%', text: 'Đọc ≥ 99%', failText: 'Rớt request', pillar: 'reliability', hard: true },
@@ -70,7 +69,6 @@ export function design(nodes: DesignNode[], edges: [string, string][], extra: Pa
     nodes,
     edges: edges.map(([from, to], i) => ({ id: `e${i}`, from, to })),
     decisions: {},
-    asked: [],
     ...extra,
   };
 }

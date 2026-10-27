@@ -207,22 +207,6 @@ describe('simulate', () => {
 
 describe('evaluate', () => {
   const level = makeLevel({
-    discovery: {
-      hours: 2,
-      stakeholders: [
-        {
-          id: 'legal',
-          name: 'Chị Lan',
-          role: 'Pháp chế',
-          avatar: 'L',
-          intro: '',
-          concerns: ['residency'],
-          quotes: { happy: 'ok', neutral: 'hmm', unhappy: 'không' },
-        },
-      ],
-      questions: [{ id: 'q1', stakeholder: 'legal', text: 'Dữ liệu?', hours: 1, answer: 'Ở VN', reveals: ['vn_only'] }],
-      facts: [{ id: 'vn_only', text: 'Dữ liệu cá nhân phải ở VN', key: true }],
-    },
     traffic: {
       ticks: 20,
       kinds: [{ id: 'read', title: 'Đọc', from: 'users', userFacing: true, carries: ['pii'], calls: [{ family: 'sql_read', count: 1 }] }],
@@ -230,32 +214,28 @@ describe('evaluate', () => {
     },
     rules: [
       { id: 'answered', check: 'metric', metric: 'answered_pct:read', op: '>=', value: 99, unit: '%', text: 'Đọc ≥ 99%', failText: 'Rớt', pillar: 'reliability', hard: true },
-      { id: 'residency', check: 'residency', tag: 'pii', regions: ['vn'], hiddenUntil: 'vn_only', text: 'Dữ liệu ở VN', failText: 'Dữ liệu ra nước ngoài', pillar: 'security', hard: true },
+      { id: 'residency', check: 'residency', tag: 'pii', regions: ['vn'], text: 'Dữ liệu ở VN', failText: 'Dữ liệu ra nước ngoài', pillar: 'security', hard: true },
     ],
   });
-  const build = (region: string, asked: string[] = []) =>
+  const build = (region: string) =>
     design(
       [usersNode(), node('app', 'app', { region }), node('db', 'db', { region })],
       [
         ['users', 'app'],
         ['app', 'db'],
       ],
-      { asked },
     );
 
-  it('a hidden rule still fails and names the missed fact', () => {
+  it('a residency violation fails the level and points at the stores', () => {
     const r = evaluate(level, build('sg'), catalog);
     expect(r.passed).toBe(false);
-    expect(r.goals.find((g) => g.ruleId === 'residency')?.discovered).toBe(false);
-    expect(r.missedFacts.map((f) => f.id)).toContain('vn_only');
-    expect(r.stakeholders[0].mood).toBe('unhappy');
+    expect(r.goals.find((g) => g.ruleId === 'residency')?.nodeIds).toContain('db');
   });
 
   it('passes and earns stars when the requirement is met', () => {
-    const r = evaluate(level, build('vn', ['q1']), catalog);
+    const r = evaluate(level, build('vn'), catalog);
     expect(r.passed).toBe(true);
     expect(r.stars).toBeGreaterThanOrEqual(2);
-    expect(r.missedFacts).toHaveLength(0);
   });
 
   it('palette violations block passing', () => {

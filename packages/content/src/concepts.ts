@@ -9,27 +9,6 @@ export interface Concept {
 
 export const concepts: Concept[] = [
   {
-    key: 'requirements_elicitation',
-    title: 'Khai thác yêu cầu',
-    summary:
-      'Khách hàng hiếm khi nói hết yêu cầu ngay từ đầu. Ràng buộc quan trọng nhất (pháp lý, ngân sách, deadline, SLA) thường nằm trong đầu những người khác nhau: giám đốc, pháp chế, vận hành, IT.',
-    saTip: 'Lập danh sách stakeholder trước khi vẽ. Hỏi mỗi người: điều gì làm dự án thất bại trong mắt họ?',
-  },
-  {
-    key: 'stakeholder_tradeoffs',
-    title: 'Cân bằng giữa các stakeholder',
-    summary:
-      'CFO muốn rẻ, CISO muốn an toàn, CTO muốn nhanh, vận hành muốn ổn định. Không có thiết kế làm tất cả hài lòng tuyệt đối; SA chọn điểm cân bằng và giải thích được vì sao.',
-    saTip: 'Ghi rõ đánh đổi trong ADR và để stakeholder ký xác nhận trước khi build.',
-  },
-  {
-    key: 'adr',
-    title: 'Architecture Decision Record (ADR)',
-    summary:
-      'Một ghi chép ngắn cho mỗi quyết định kiến trúc: bối cảnh, phương án đã cân nhắc, lựa chọn, hệ quả. Giúp người đến sau hiểu vì sao hệ thống như hiện tại.',
-    saTip: 'Viết ADR ngay khi quyết định, không phải sau khi dự án xong.',
-  },
-  {
     key: 'data_residency',
     title: 'Data residency (Nghị định 13/2023)',
     summary:

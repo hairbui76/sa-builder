@@ -8,9 +8,6 @@ export { checkRule, formatValue } from './rules';
 export {
   evaluate,
   evaluationId,
-  discoveredFacts,
-  answeredQuestions,
-  hoursUsed,
   ENGINE_VERSION,
   STAR2_SCORE,
   STAR3_SCORE,

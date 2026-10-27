@@ -1,11 +1,11 @@
 'use client';
 import { create } from 'zustand';
-import { canConnect, hoursUsed, type Design, type EvalResult, type Level, type NodeSettings } from '@sa/engine';
+import { canConnect, type Design, type EvalResult, type Level, type NodeSettings } from '@sa/engine';
 import { catalog } from '@sa/content';
 import { defaultSettings, emptyDesign, nextNodeId } from '@/lib/design';
 import { layeredLayout } from '@/lib/layout';
 
-export type Stage = 'discovery' | 'design' | 'review';
+export type Stage = 'design' | 'review';
 export type RightTab = 'components' | 'decisions' | 'inspect';
 
 interface Toast {
@@ -39,8 +39,6 @@ interface GameState {
   connect(from: string, to: string): void;
   removeEdge(id: string): void;
   choose(decisionId: string, optionId: string): void;
-  setNote(decisionId: string, text: string): void;
-  ask(questionId: string): boolean;
   setRunning(v: boolean): void;
   setResult(r: EvalResult): void;
   reset(): void;
@@ -55,7 +53,7 @@ export const useGame = create<GameState>((set, get) => {
 
   return {
     level: null,
-    design: { nodes: [], edges: [], decisions: {}, asked: [] },
+    design: { nodes: [], edges: [], decisions: {} },
     selected: null,
     stage: 'design',
     tab: 'components',
@@ -66,8 +64,7 @@ export const useGame = create<GameState>((set, get) => {
     viewVersion: 0,
 
     init(level, design) {
-      const fresh = design.asked.length === 0 && design.nodes.length <= level.fixedNodes.length;
-      set({ level, design, selected: null, stage: fresh ? 'discovery' : 'design', tab: 'components', result: null, stale: true, running: false });
+      set({ level, design, selected: null, stage: 'design', tab: 'components', result: null, stale: true, running: false });
     },
     setStage: (stage) => set({ stage }),
     setTab: (tab) => set({ tab }),
@@ -146,30 +143,13 @@ export const useGame = create<GameState>((set, get) => {
       change((d) => ({ ...d, decisions: { ...d.decisions, [decisionId]: optionId } }));
     },
 
-    setNote(decisionId, text) {
-      set((s) => ({ design: { ...s.design, notes: { ...(s.design.notes ?? {}), [decisionId]: text } } }));
-    },
-
-    ask(questionId) {
-      const { level, design } = get();
-      if (!level || design.asked.includes(questionId)) return false;
-      const q = level.discovery.questions.find((x) => x.id === questionId);
-      if (!q) return false;
-      if (hoursUsed(level, design) + q.hours > level.discovery.hours + 1e-9) {
-        get().notify('Hết giờ họp cho câu hỏi này.', 'error');
-        return false;
-      }
-      change((d) => ({ ...d, asked: [...d.asked, questionId] }));
-      return true;
-    },
-
     setRunning: (running) => set({ running }),
     setResult: (result) => set({ result, stale: false, stage: 'review' }),
 
     reset() {
       const { level } = get();
       if (!level) return;
-      set({ design: emptyDesign(level), selected: null, result: null, stale: true, stage: 'discovery', tab: 'components' });
+      set({ design: emptyDesign(level), selected: null, result: null, stale: true, stage: 'design', tab: 'components' });
     },
 
     arrange() {

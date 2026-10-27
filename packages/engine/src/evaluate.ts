@@ -6,17 +6,15 @@ import type {
   ComponentDef,
   Design,
   EvalResult,
-  Fact,
   GoalResult,
   Level,
   Pillar,
   Reason,
-  Verdict,
 } from './types';
 import { PILLARS } from './types';
 import { hashString, round } from './util';
 
-export const ENGINE_VERSION = '0.1.0';
+export const ENGINE_VERSION = '0.2.0';
 export const STAR2_SCORE = 70;
 export const STAR3_SCORE = 85;
 const FAILING_CODES = new Set([...BLOCKING_CODES, 'decision_missing', 'requirement_missing']);
@@ -25,38 +23,10 @@ export function evaluationId(level: Level): string {
   return `${ENGINE_VERSION}:${level.id}:${hashString(JSON.stringify(level))}`;
 }
 
-/** Questions asked, in order, that fit within the level's meeting hours (the server cannot trust the client on this). */
-export function answeredQuestions(level: Level, design: Design): string[] {
-  const out: string[] = [];
-  let used = 0;
-  for (const id of new Set(design.asked)) {
-    const q = level.discovery.questions.find((x) => x.id === id);
-    if (!q || used + q.hours > level.discovery.hours + 1e-9) continue;
-    used += q.hours;
-    out.push(id);
-  }
-  return out;
-}
-
-export function discoveredFacts(level: Level, design: Design): Set<string> {
-  const asked = new Set(answeredQuestions(level, design));
-  const out = new Set<string>();
-  for (const q of level.discovery.questions) {
-    if (asked.has(q.id)) for (const f of q.reveals ?? []) out.add(f);
-  }
-  return out;
-}
-
-export function hoursUsed(level: Level, design: Design): number {
-  const asked = new Set(answeredQuestions(level, design));
-  return level.discovery.questions.filter((q) => asked.has(q.id)).reduce((s, q) => s + q.hours, 0);
-}
-
 export function evaluate(level: Level, design: Design, catalog: Record<string, ComponentDef>): EvalResult {
   const compiled = compile(level, design, catalog);
   const sim = simulate(level, compiled);
   const { analysis, issues: analysisIssues } = analyze(level, design, compiled, sim);
-  const discovered = discoveredFacts(level, design);
 
   const goals: GoalResult[] = level.rules.map((rule) => {
     const out = checkRule(rule, { level, design, compiled, analysis });
@@ -68,32 +38,11 @@ export function evaluate(level: Level, design: Design, catalog: Record<string, C
       passed: out.passed,
       score: out.score,
       actual: out.actual,
-      hidden: !!rule.hiddenUntil,
-      discovered: !rule.hiddenUntil || discovered.has(rule.hiddenUntil),
       failText: out.passed ? undefined : rule.failText,
       conceptKey: rule.conceptKey,
       nodeIds: out.nodeIds,
     };
   });
-
-  const keyFacts = level.discovery.facts.filter((f) => f.key);
-  if (keyFacts.length > 0) {
-    const found = keyFacts.filter((f) => discovered.has(f.id)).length;
-    const score = found / keyFacts.length;
-    goals.push({
-      ruleId: '_discovery',
-      text: 'Nắm được các yêu cầu quan trọng khi khảo sát',
-      pillar: 'business',
-      hard: false,
-      passed: score >= 0.999,
-      score,
-      actual: `${found}/${keyFacts.length} yêu cầu quan trọng`,
-      hidden: false,
-      discovered: true,
-      failText: score >= 0.999 ? undefined : 'Bạn bỏ lỡ một số yêu cầu quan trọng của khách hàng.',
-      conceptKey: 'requirements_elicitation',
-    });
-  }
 
   // Pillar scores: weighted mean of the goals tagged with each pillar.
   const pillars = {} as Record<Pillar, number | null>;
@@ -134,29 +83,6 @@ export function evaluate(level: Level, design: Design, catalog: Record<string, C
     if (overall >= STAR3_SCORE && tcoOk) stars = 3;
   }
 
-  const goalById = new Map(goals.map((g) => [g.ruleId, g]));
-  const stakeholders: Verdict[] = level.discovery.stakeholders.map((s) => {
-    const gs = s.concerns.map((c) => goalById.get(c)).filter((g): g is GoalResult => !!g);
-    const score = gs.length > 0 ? gs.reduce((a, g) => a + g.score, 0) / gs.length : 1;
-    const mood = score >= 0.9 ? 'happy' : score >= 0.6 ? 'neutral' : 'unhappy';
-    return {
-      stakeholderId: s.id,
-      name: s.name,
-      role: s.role,
-      avatar: s.avatar,
-      mood,
-      quote: s.quotes[mood],
-      score: round(score * 100, 0),
-    };
-  });
-
-  const gating = new Set(
-    level.rules.filter((r) => r.hiddenUntil && !goalById.get(r.id)?.passed).map((r) => r.hiddenUntil as string),
-  );
-  const missedFacts: Fact[] = level.discovery.facts.filter(
-    (f) => !discovered.has(f.id) && (f.key || gating.has(f.id)),
-  );
-
   return {
     evaluationId: evaluationId(level),
     passed,
@@ -164,9 +90,7 @@ export function evaluate(level: Level, design: Design, catalog: Record<string, C
     overall,
     pillars,
     goals,
-    stakeholders,
     reasons,
-    missedFacts,
     sim,
     analysis,
   };

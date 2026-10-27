@@ -188,33 +188,6 @@ export interface Region {
   priceMultiplier: number;
 }
 
-export interface Stakeholder {
-  id: string;
-  name: string;
-  role: string;
-  avatar: string;
-  intro: string;
-  /** Rule ids this person cares about. */
-  concerns: string[];
-  quotes: { happy: string; neutral: string; unhappy: string };
-}
-
-export interface Question {
-  id: string;
-  stakeholder: string;
-  text: string;
-  hours: number;
-  answer: string;
-  reveals?: string[];
-}
-
-export interface Fact {
-  id: string;
-  text: string;
-  /** Key facts count towards the business pillar. */
-  key: boolean;
-}
-
 export interface Effects {
   monthlyUsd?: number;
   oneOffUsd?: number;
@@ -251,8 +224,6 @@ interface RuleBase {
   pillar: Pillar;
   hard: boolean;
   weight?: number;
-  /** Not shown as a goal until this fact is discovered (still evaluated). */
-  hiddenUntil?: string;
   conceptKey?: string;
 }
 
@@ -309,7 +280,6 @@ export interface Level {
   events: SimEvent[];
   palette: PaletteEntry[];
   limits: { maxNodes: number; maxEdges: number };
-  discovery: { hours: number; stakeholders: Stakeholder[]; questions: Question[]; facts: Fact[] };
   decisions: Decision[];
   rules: Rule[];
   stars: { tco3yUsd?: number };
@@ -346,10 +316,6 @@ export interface Design {
   edges: DesignEdge[];
   /** decisionId → optionId */
   decisions: Record<string, string>;
-  /** Discovery question ids already asked. */
-  asked: string[];
-  /** Optional ADR notes per decision. */
-  notes?: Record<string, string>;
 }
 
 export type Severity = 'error' | 'warn' | 'info';
@@ -421,21 +387,9 @@ export interface GoalResult {
   /** 0..1 */
   score: number;
   actual?: string;
-  hidden: boolean;
-  discovered: boolean;
   failText?: string;
   conceptKey?: string;
   nodeIds?: string[];
-}
-
-export interface Verdict {
-  stakeholderId: string;
-  name: string;
-  role: string;
-  avatar: string;
-  mood: 'happy' | 'neutral' | 'unhappy';
-  quote: string;
-  score: number;
 }
 
 export interface EvalResult {
@@ -445,9 +399,7 @@ export interface EvalResult {
   overall: number;
   pillars: Record<Pillar, number | null>;
   goals: GoalResult[];
-  stakeholders: Verdict[];
   reasons: Reason[];
-  missedFacts: Fact[];
   sim: SimResult;
   analysis: Analysis;
 }

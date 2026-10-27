@@ -1,5 +1,5 @@
 // End-to-end smoke test against a running server: `pnpm --filter web start` then `pnpm --filter web e2e`.
-// Plays level 1 through the UI: discovery, building the board, wiring, settings, run, review.
+// Plays level 1 through the UI: building the board, wiring, settings, run, review.
 import { chromium } from 'playwright';
 
 const BASE = process.env.BASE_URL ?? 'http://localhost:3000';
@@ -17,13 +17,7 @@ await page.goto(`${BASE}/levels/ask_before_draw`, { waitUntil: 'networkidle' });
 await page.evaluate(() => localStorage.clear());
 await page.reload({ waitUntil: 'networkidle' });
 
-// 1. Discovery: ask the questions that reveal the hidden constraints.
-for (const q of ['q_budget', 'q_noshow', 'q_data', 'q_team']) await page.click(`[data-testid=ask-${q}]`);
-const hours = await page.textContent('[data-testid=hours-left]');
-if (!hours?.startsWith('0,5')) fail(`expected 0,5 hours left, got ${hours}`);
-await page.click('[data-testid=start-design]');
-
-// 2. Design: add components, set them to Vietnam, wire them.
+// 1. Design: add components, set them to Vietnam, wire them.
 const add = async (type) => {
   await page.click(`[data-testid=palette-${type}]`);
   await page.waitForTimeout(100);
@@ -60,7 +54,7 @@ await wire('worker_1', 'sms_vn_1');
 const edges = await page.locator('.react-flow__edge').count();
 if (edges !== 5) fail(`expected 5 wires, got ${edges}`);
 
-// 3. Run and 4. review.
+// 2. Run and review.
 await page.click('[data-testid=run]');
 await page.waitForSelector('[data-testid=review]', { timeout: 10000 });
 const verdict = await page.textContent('[data-testid=verdict]');
